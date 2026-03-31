@@ -864,6 +864,7 @@ select.field-input option { background: #fff; }
         <div class="role-pill" id="rolePill">Çalışan</div>
   
       <button id="raporBtn" onclick="hizmetRaporuAc()" style="display:none;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:#1a8a3a;background:#edfbf1;border:1.5px solid #b8eac8;padding:5px 12px;border-radius:6px;cursor:pointer;">📊 Rapor</button>
+      <button id="yedekBtn" onclick="yedekMenuAc()" style="display:none;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:#555;background:#f5f5f5;border:1.5px solid #ddd;padding:5px 12px;border-radius:6px;cursor:pointer;">💾 Yedek</button>
       <button class="btn-logout" onclick="logout()" style="margin-left:auto;">Çıkış</button>
       </div>
     </div>
@@ -1721,11 +1722,13 @@ function applyRole() {
     formTab.classList.remove('hidden');
     hurdaForm.style.display = 'block';
     if (raporBtn) raporBtn.style.display = 'inline-block';
+    var yb = document.getElementById('yedekBtn'); if(yb) yb.style.display='inline-block';
   } else {
     pill.textContent = '🔧 Çalışan'; pill.classList.remove('admin');
     formTab.classList.add('hidden');
     hurdaForm.style.display = 'none';
     if (raporBtn) raporBtn.style.display = 'none';
+    var yb2 = document.getElementById('yedekBtn'); if(yb2) yb2.style.display='none';
   }
   applyDepoForm();
 }
@@ -3708,6 +3711,78 @@ function onayOnayla() {
 function onayReddet() {
   document.getElementById('onayModal').style.display = 'none';
   _onayCallback = null;
+}
+
+
+// -- YEDEK SİSTEMİ --
+function yedekMenuAc() {
+  var prev = document.getElementById('yedekModal');
+  if (prev) { prev.remove(); return; }
+  var overlay = document.createElement('div');
+  overlay.id = 'yedekModal';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px;';
+
+  var kapanisId = "yedekModal";
+  overlay.innerHTML = '<div style="background:#fff;border-radius:14px;padding:24px;width:100%;max-width:360px;box-shadow:0 8px 40px rgba(0,0,0,0.2);">'
+    + '<div style="font-family:Montserrat,sans-serif;font-weight:900;font-size:18px;margin-bottom:4px;">💾 Yedek Yönetimi</div>'
+    + '<div style="font-size:12px;color:#888;margin-bottom:20px;">Tüm Firebase verileri JSON dosyası olarak kaydedilir</div>'
+    + '<button onclick="jsonExport()" style="width:100%;padding:13px;background:#1a8a3a;color:#fff;border:none;border-radius:8px;font-family:Inter,sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;">⬇️ Yedeği İndir</button>'
+    + '<button onclick="document.getElementById(' + JSON.stringify('jsonImportInput') + ').click()" style="width:100%;padding:13px;background:#3a6abf;color:#fff;border:none;border-radius:8px;font-family:Inter,sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px;">⬆️ Yedekten Geri Yükle</button>'
+    + '<input type="file" id="jsonImportInput" accept=".json" style="display:none;" onchange="jsonImport(event)">'
+    + '<button onclick="document.getElementById(' + JSON.stringify('yedekModal') + ').remove()" style="width:100%;padding:11px;background:#f5f5f5;color:#555;border:1.5px solid #ddd;border-radius:8px;font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Kapat</button>'
+    + '</div>';
+
+  overlay.addEventListener('click', function(e) { if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+async function jsonExport() {
+  var yedek = {
+    tarih: new Date().toLocaleString('tr-TR'),
+    versiyon: '1.0',
+    otel: getData(),
+    hurda: getHurda(),
+    deleted: getDeleted()
+  };
+  var blob = new Blob([JSON.stringify(yedek, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'las-ankara-yedek-' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Yedek indirildi!', 'success');
+  var m = document.getElementById('yedekModal');
+  if (m) m.remove();
+}
+
+async function jsonImport(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = async function(ev) {
+    try {
+      var yedek = JSON.parse(ev.target.result);
+      if (!yedek.otel) { showToast('Geçersiz yedek dosyası!', 'error'); return; }
+      onayGoster(
+        'Mevcut tüm veriler silinip yedekten yüklenecek. Emin misiniz?',
+        async function() {
+          if (yedek.otel) await setData(yedek.otel);
+          if (yedek.hurda) await setHurda(yedek.hurda);
+          if (yedek.deleted) await setDeleted(yedek.deleted);
+          refreshAll();
+          showToast('Yedek başarıyla yüklendi!', 'success');
+          var m = document.getElementById('yedekModal');
+          if (m) m.remove();
+        }
+      );
+    } catch(err) {
+      showToast('JSON okuma hatası!', 'error');
+    }
+  };
+  reader.readAsText(file);
 }
 
 // Keyboard support
