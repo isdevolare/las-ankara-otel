@@ -3195,10 +3195,10 @@ function renderSatilan() {
 }
 
 async function deleteHurda(id) {
-  if (!confirm('Bu çıkma lastik kaydını silmek istediğinize emin misiniz?')) return;
   await setHurda(getHurda().filter(d=>d.id!==id));
   closeHurdaModal();
-  renderHurda(); showToast('Çıkma lastik silindi', 'success');
+  renderHurda();
+  showToast('Cikma lastik silindi', 'success');
 }
 
 function openHurdaDetail(id) {
