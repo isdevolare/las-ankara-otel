@@ -863,9 +863,8 @@ select.field-input option { background: #fff; }
       <div class="topbar-right">
         <div class="role-pill" id="rolePill">Çalışan</div>
   
-      <button id="raporBtn" onclick="hizmetRaporuAc()" style="display:none;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:#1a8a3a;background:#edfbf1;border:1.5px solid #b8eac8;padding:5px 12px;border-radius:6px;cursor:pointer;">📊 Rapor</button>
-      <button id="yedekBtn" onclick="yedekMenuAc()" style="display:none;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:#555;background:#f5f5f5;border:1.5px solid #ddd;padding:5px 12px;border-radius:6px;cursor:pointer;">💾 Yedek</button>
-      <button class="btn-logout" onclick="logout()" style="margin-left:auto;">Çıkış</button>
+
+
       </div>
     </div>
     <nav class="nav-tabs">
@@ -1718,17 +1717,15 @@ function applyRole() {
   const hurdaForm = document.getElementById('hurdaFormCard');
   const raporBtn = document.getElementById('raporBtn');
   if (role === 'admin') {
-    pill.textContent = '👑 Yönetici'; pill.classList.add('admin');
+    pill.textContent = '👑 Yönetici ▾'; pill.classList.add('admin');
+    var dd = document.getElementById('adminDropdown'); if(dd) dd.dataset.admin='1';
     formTab.classList.remove('hidden');
     hurdaForm.style.display = 'block';
-    if (raporBtn) raporBtn.style.display = 'inline-block';
-    var yb = document.getElementById('yedekBtn'); if(yb) yb.style.display='inline-block';
   } else {
     pill.textContent = '🔧 Çalışan'; pill.classList.remove('admin');
+    var dd2 = document.getElementById('adminDropdown'); if(dd2) dd2.dataset.admin='0';
     formTab.classList.add('hidden');
     hurdaForm.style.display = 'none';
-    if (raporBtn) raporBtn.style.display = 'none';
-    var yb2 = document.getElementById('yedekBtn'); if(yb2) yb2.style.display='none';
   }
   applyDepoForm();
 }
@@ -3784,6 +3781,27 @@ async function jsonImport(e) {
   };
   reader.readAsText(file);
 }
+
+
+// -- ADMİN DROPDOWN --
+function adminMenuToggle() {
+  if (role !== 'admin') return;
+  var dd = document.getElementById('adminDropdown');
+  if (!dd) return;
+  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+function adminMenuKapat() {
+  var dd = document.getElementById('adminDropdown');
+  if (dd) dd.style.display = 'none';
+}
+// Dışarı tıklayınca kapat
+document.addEventListener('click', function(e) {
+  var pill = document.getElementById('rolePill');
+  var dd = document.getElementById('adminDropdown');
+  if (dd && pill && !pill.contains(e.target) && !dd.contains(e.target)) {
+    dd.style.display = 'none';
+  }
+});
 
 // Keyboard support
 document.addEventListener('keydown', e => {
