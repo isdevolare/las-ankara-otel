@@ -3549,12 +3549,12 @@ function rotusSecenekGoster(secenekler) {
 function rotusAnaSoru() {
   setTimeout(function() {
     rotusSecenekGoster([
-      { label: 'Sistemde kac lastik var?', action: rotusSayilar },
-      { label: 'Montaj bekleyen var mi?', action: rotusMontajBekleyen },
+      { label: 'Sistemde kaç lastik var?', action: rotusSayilar },
+      { label: 'Montaj bekleyen var mı?', action: rotusMontajBekleyen },
       { label: 'Montaj tamamlananlar?', action: rotusMontajTamam },
-      { label: 'Sira bekleyen kayit var mi?', action: rotusDepoBekleyen },
-      { label: 'Bu sezon kazanc raporu', action: rotusKazanc },
-      { label: 'Satillik cikma lastik?', action: rotusCikma },
+      { label: 'Sıra bekleyen kayıt var mı?', action: rotusDepoBekleyen },
+      { label: 'Bu sezon kazanç raporu', action: rotusKazanc },
+      { label: 'Satılık çıkma lastik?', action: rotusCikma },
       { label: 'Arama yap', action: rotusAra },
     ]);
   }, 300);
@@ -3568,13 +3568,13 @@ function rotusSayilar() {
   var sb = data.filter(function(k) { return !k.teslim && !k.gelmedi && !k.sira; }).length;
   var gm = data.filter(function(k) { return k.gelmedi; }).length;
   var ck = getHurda().filter(function(h) { return h.durum !== 'satildi'; }).length;
-  var msg = 'Sistem Ozeti:' + NL + NL;
-  msg += 'Montaj bekleyen: ' + mb + ' arac' + NL;
-  msg += 'Montaj tamamlanan: ' + mt + ' arac' + NL;
-  msg += 'Teslim edilen: ' + te + ' arac' + NL;
-  msg += 'Sira bekleyen: ' + sb + ' kayit' + NL;
-  msg += 'Gelmeyen musteri: ' + gm + ' arac' + NL;
-  msg += 'Satillik cikma: ' + ck + ' adet';
+  var msg = 'Sistem Özeti:' + NL + NL;
+  msg += 'Montaj Bekleyen: ' + mb + ' arac' + NL;
+  msg += 'Montaj Tamamlanan: ' + mt + ' arac' + NL;
+  msg += 'Teslim Edilen: ' + te + ' arac' + NL;
+  msg += 'Sıra Bekleyen: ' + sb + ' kayit' + NL;
+  msg += 'Gelmeyen Müşteri: ' + gm + ' arac' + NL;
+  msg += 'Satılık Çıkma: ' + ck + ' adet';
   rotusMesajEkle('rotus', msg);
   setTimeout(rotusGeriDon, 500);
 }
@@ -3582,17 +3582,17 @@ function rotusSayilar() {
 function rotusMontajBekleyen() {
   var list = getData().filter(function(k) { return !k.teslim && !k.gelmedi && !k.montaj && k.sira; });
   if (!list.length) {
-    rotusMesajEkle('rotus', 'Su an montaj bekleyen lastik yok!');
+    rotusMesajEkle('rotus', 'Şu an montaj bekleyen lastik yok!');
     setTimeout(rotusGeriDon, 400);
     return;
   }
   var satirlar = list.slice(0,5).map(function(k) { return '- ' + k.plaka + ' / ' + k.isim + ' (' + (k.sira||'-') + ')'; }).join(NL);
-  var devam = list.length > 5 ? (NL + '...ve ' + (list.length-5) + ' arac daha') : '';
-  rotusMesajEkle('rotus', list.length + ' arac montaj bekliyor:' + NL + NL + satirlar + devam);
+  var devam = list.length > 5 ? (NL + '...ve ' + (list.length-5) + ' araç daha') : '';
+  rotusMesajEkle('rotus', list.length + ' araç montaj bekliyor:' + NL + NL + satirlar + devam);
   setTimeout(function() {
     rotusSecenekGoster([
-      { label: 'Montaj Bekleyenlere git', action: function() { rotusKapat(); showPage('otel', document.getElementById('ntab-otel')); }},
-      { label: 'Ana menuye don', action: rotusAnaSoru },
+      { label: 'Montaj Bekleyenlere Git', action: function() { rotusKapat(); showPage('otel', document.getElementById('ntab-otel')); }},
+      { label: 'Ana Menüye Dön', action: rotusAnaSoru },
     ]);
   }, 400);
 }
@@ -3600,17 +3600,17 @@ function rotusMontajBekleyen() {
 function rotusMontajTamam() {
   var list = getData().filter(function(k) { return k.montaj && !k.teslim; });
   if (!list.length) {
-    rotusMesajEkle('rotus', 'Henuz montaj tamamlanan yok.');
+    rotusMesajEkle('rotus', 'Henüz montaj tamamlanan yok.');
     setTimeout(rotusGeriDon, 400);
     return;
   }
   var satirlar = list.slice(0,5).map(function(k) { return '- ' + k.plaka + ' / ' + k.isim; }).join(NL);
-  var devam = list.length > 5 ? (NL + '...ve ' + (list.length-5) + ' arac daha') : '';
-  rotusMesajEkle('rotus', list.length + ' aracta montaj tamamlandi:' + NL + NL + satirlar + devam);
+  var devam = list.length > 5 ? (NL + '...ve ' + (list.length-5) + ' araç daha') : '';
+  rotusMesajEkle('rotus', list.length + ' araçta montaj tamamlandı:' + NL + NL + satirlar + devam);
   setTimeout(function() {
     rotusSecenekGoster([
-      { label: 'Montaj Tamamlandiya git', action: function() { rotusKapat(); showPage('montaj', document.getElementById('ntab-montaj')); }},
-      { label: 'Ana menuye don', action: rotusAnaSoru },
+      { label: 'Montaj Tamamlandı'ya Git', action: function() { rotusKapat(); showPage('montaj', document.getElementById('ntab-montaj')); }},
+      { label: 'Ana Menüye Dön', action: rotusAnaSoru },
     ]);
   }, 400);
 }
@@ -3618,17 +3618,17 @@ function rotusMontajTamam() {
 function rotusDepoBekleyen() {
   var list = getData().filter(function(k) { return !k.teslim && !k.gelmedi && !k.sira; });
   if (!list.length) {
-    rotusMesajEkle('rotus', 'Tum kayitlara depo sirasi atanmis!');
+    rotusMesajEkle('rotus', 'Tüm kayıtlara depo sırası atanmış!');
     setTimeout(rotusGeriDon, 400);
     return;
   }
   var satirlar = list.slice(0,5).map(function(k) { return '- ' + k.plaka + ' / ' + k.isim + ' (' + k.donem + ')'; }).join(NL);
-  var devam = list.length > 5 ? (NL + '...ve ' + (list.length-5) + ' kayit daha') : '';
-  rotusMesajEkle('rotus', list.length + ' kayit sira bekliyor:' + NL + NL + satirlar + devam + NL + NL + 'Depo Sayimdan sira no atayabilirsiniz.');
+  var devam = list.length > 5 ? (NL + '...ve ' + (list.length-5) + ' kayıt daha') : '';
+  rotusMesajEkle('rotus', list.length + ' kayıt sıra bekliyor:' + NL + NL + satirlar + devam + NL + NL + 'Depo Sayım'dan sıra no atayabilirsiniz.');
   setTimeout(function() {
     rotusSecenekGoster([
-      { label: 'Depo Sayima git', action: function() { rotusKapat(); showPage('depo', document.getElementById('ntab-depo')); }},
-      { label: 'Ana menuye don', action: rotusAnaSoru },
+      { label: 'Depo Sayıma Git', action: function() { rotusKapat(); showPage('depo', document.getElementById('ntab-depo')); }},
+      { label: 'Ana Menüye Dön', action: rotusAnaSoru },
     ]);
   }, 400);
 }
@@ -3644,7 +3644,7 @@ function rotusKazanc() {
   });
   var toplam = tumH.reduce(function(s,h) { return s + (h.fiyat||0); }, 0);
   if (!tumH.length) {
-    rotusMesajEkle('rotus', donem + ' doneminde henuz hizmet kaydi yok.' + NL + NL + 'Montaj yaparken hizmet ekleyin!');
+    rotusMesajEkle('rotus', donem + ' döneminde henüz hizmet kaydı yok.' + NL + NL + 'Montaj yaparken hizmet ekleyin!');
   } else {
     var gruplar = {};
     tumH.forEach(function(h) {
@@ -3654,12 +3654,12 @@ function rotusKazanc() {
     });
     var satirlar = Object.entries(gruplar).sort(function(a,b){ return b[1].toplam-a[1].toplam; })
       .slice(0,4).map(function(e){ return '- ' + e[0] + ': ' + e[1].sayi + 'x = ' + e[1].toplam.toLocaleString('tr-TR') + ' TL'; }).join(NL);
-    rotusMesajEkle('rotus', donem + ' Kazanc Raporu:' + NL + NL + satirlar + NL + NL + 'TOPLAM: ' + toplam.toLocaleString('tr-TR') + ' TL' + NL + '(' + tumH.length + ' islem)');
+    rotusMesajEkle('rotus', donem + ' Kazanç Raporu:' + NL + NL + satirlar + NL + NL + 'Toplam: ' + toplam.toLocaleString('tr-TR') + ' TL' + NL + '(' + tumH.length + ' işlem)');
   }
   setTimeout(function() {
     rotusSecenekGoster([
-      { label: 'Detayli raporu ac', action: function() { rotusKapat(); hizmetRaporuAc(); }},
-      { label: 'Ana menuye don', action: rotusAnaSoru },
+      { label: 'Detaylı Raporu Aç', action: function() { rotusKapat(); hizmetRaporuAc(); }},
+      { label: 'Ana Menüye Dön', action: rotusAnaSoru },
     ]);
   }, 400);
 }
@@ -3667,17 +3667,17 @@ function rotusKazanc() {
 function rotusCikma() {
   var list = getHurda().filter(function(h) { return h.durum !== 'satildi'; });
   if (!list.length) {
-    rotusMesajEkle('rotus', 'Su an satillik cikma lastik yok.');
+    rotusMesajEkle('rotus', 'Şu an satılık çıkma lastik yok.');
     setTimeout(rotusGeriDon, 400);
     return;
   }
   var satirlar = list.slice(0,4).map(function(h) { return '- ' + h.ebat + ' ' + h.marka + ' / ' + h.adet + ' adet' + (h.fiyat ? ' / ' + h.fiyat + ' TL' : ''); }).join(NL);
   var devam = list.length > 4 ? (NL + '...ve ' + (list.length-4) + ' adet daha') : '';
-  rotusMesajEkle('rotus', list.length + ' adet satillik lastik:' + NL + NL + satirlar + devam);
+  rotusMesajEkle('rotus', list.length + ' adet satılık lastik:' + NL + NL + satirlar + devam);
   setTimeout(function() {
     rotusSecenekGoster([
-      { label: 'Cikma Lastiklere git', action: function() { rotusKapat(); showPage('hurda', document.getElementById('ntab-hurda')); }},
-      { label: 'Ana menuye don', action: rotusAnaSoru },
+      { label: 'Çıkma Lastiklere Git', action: function() { rotusKapat(); showPage('hurda', document.getElementById('ntab-hurda')); }},
+      { label: 'Ana Menüye Dön', action: rotusAnaSoru },
     ]);
   }, 400);
 }
@@ -3686,17 +3686,17 @@ function rotusAra() {
   rotusMesajEkle('rotus', 'Hangi sayfada aramak istersiniz?');
   setTimeout(function() {
     rotusSecenekGoster([
-      { label: 'Montaj bekleyenlerde ara', action: function() { rotusKapat(); showPage('otel', document.getElementById('ntab-otel')); setTimeout(function(){ var s=document.getElementById('searchInput'); if(s)s.focus(); },300); }},
-      { label: 'Depo sayiminda ara', action: function() { rotusKapat(); showPage('depo', document.getElementById('ntab-depo')); setTimeout(function(){ var s=document.getElementById('depoSearchInput'); if(s)s.focus(); },300); }},
-      { label: 'Teslim edilenlerde ara', action: function() { rotusKapat(); showPage('arsiv', document.getElementById('ntab-arsiv')); setTimeout(function(){ var s=document.getElementById('arsivSearchInput'); if(s)s.focus(); },300); }},
-      { label: 'Ana menuye don', action: rotusAnaSoru },
+      { label: 'Montaj Bekleyenlerde Ara', action: function() { rotusKapat(); showPage('otel', document.getElementById('ntab-otel')); setTimeout(function(){ var s=document.getElementById('searchInput'); if(s)s.focus(); },300); }},
+      { label: 'Depo Sayımında Ara', action: function() { rotusKapat(); showPage('depo', document.getElementById('ntab-depo')); setTimeout(function(){ var s=document.getElementById('depoSearchInput'); if(s)s.focus(); },300); }},
+      { label: 'Teslim Edilenlerde Ara', action: function() { rotusKapat(); showPage('arsiv', document.getElementById('ntab-arsiv')); setTimeout(function(){ var s=document.getElementById('arsivSearchInput'); if(s)s.focus(); },300); }},
+      { label: 'Ana Menüye Dön', action: rotusAnaSoru },
     ]);
   }, 300);
 }
 
 function rotusGeriDon() {
   rotusSecenekGoster([
-    { label: 'Ana menuye don', action: rotusAnaSoru },
+    { label: 'Ana Menüye Dön', action: rotusAnaSoru },
     { label: 'Kapat', action: rotusKapat },
   ]);
 }
@@ -4016,7 +4016,7 @@ async function downloadTireFormFromMenu() {
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js').then(reg => {
+    navigator.serviceWorker.register('service-worker.js?v=4').then(reg => {
       // Yeni versiyon varsa hemen güncelle
       reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;

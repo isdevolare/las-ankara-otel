@@ -1,23 +1,21 @@
-const CACHE_NAME = 'las-ankara-v3';
+const CACHE_NAME = 'las-ankara-v4';
 const ASSETS = [
   '/las-ankara-otel/',
   '/las-ankara-otel/index.html',
-  'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap',
-  'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js'
+  'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap'
 ];
 
-// Kurulum - statik dosyaları önbelleğe al
 self.addEventListener('message', e => {
   if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('install', e => {
+  self.skipWaiting();
   e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
 });
 
-// Aktifleştirme - eski cache temizle
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -26,26 +24,8 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Fetch - önce cache, yoksa network
 self.addEventListener('fetch', e => {
-  // Firebase isteklerini cache'leme
-  if (e.request.url.includes('firebasedatabase.app') || 
-      e.request.url.includes('firebase') ||
-      e.request.method !== 'GET') {
-    return;
-  }
-
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(response => {
-        if (!response || response.status !== 200 || response.type === 'opaque') {
-          return response;
-        }
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
-        return response;
-      }).catch(() => caches.match('/las-ankara-otel/index.html'));
-    })
+    fetch(e.request).catch(() => caches.match(e.request))
   );
 });
