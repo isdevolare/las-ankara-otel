@@ -855,20 +855,28 @@ select.field-input option { background: #fff; }
 <div id="appScreen">
   <div class="topbar">
     <div class="topbar-row1">
-      <div class="topbar-logo" onclick="showPage('otel', document.getElementById('ntab-otel'))" style="cursor:pointer;">
-        <span class="tl-las">LAS</span>
-        <span class="tl-ankara"> ANKARA</span>
+      <div class="topbar-logo" onclick="showPage('otel', document.getElementById('ntab-otel'))" style="cursor:pointer;display:flex;align-items:baseline;gap:0;">
+        <div style="display:flex;flex-direction:column;line-height:1;">
+          <div>
+            <span class="tl-las">LAS</span>
+            <span class="tl-ankara"> ANKARA</span>
+          </div>
+          <div style="font-family:'Inter',sans-serif;font-size:9px;font-weight:600;letter-spacing:0.22em;color:#aaa;text-transform:uppercase;margin-top:1px;padding-left:2px;">Professional Service</div>
+        </div>
       </div>
       <div class="topbar-divider"></div>
       <div class="topbar-right">
         <div style="position:relative;">
           <div class="role-pill" id="rolePill" onclick="adminMenuToggle()" style="cursor:pointer;user-select:none;"></div>
-        <button id="calisanCikisBtn" onclick="logout()" style="display:none;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:#cc0000;background:#fff0f0;border:1.5px solid #ffcccc;padding:5px 12px;border-radius:6px;cursor:pointer;margin-left:6px;">🚪 Çıkış</button>
+
           <div id="adminDropdown" style="display:none;position:absolute;top:36px;left:0;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.15);border:1px solid #eee;min-width:160px;z-index:1000;overflow:hidden;">
             <button onclick="hizmetRaporuAc();adminMenuKapat()" style="width:100%;padding:12px 16px;border:none;background:#fff;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-align:left;color:#333;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='#fff'">📊 Rapor</button>
             <div style="height:1px;background:#f0f0f0;"></div>
             <button onclick="yedekMenuAc();adminMenuKapat()" style="width:100%;padding:12px 16px;border:none;background:#fff;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-align:left;color:#333;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='#fff'">💾 Yedek Al</button>
             <div style="height:1px;background:#f0f0f0;"></div>
+            <button onclick="logout()" style="width:100%;padding:12px 16px;border:none;background:#fff;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-align:left;color:#cc0000;" onmouseover="this.style.background='#fff0f0'" onmouseout="this.style.background='#fff'">🚪 Çıkış</button>
+          </div>
+          <div id="calisanDropdown" style="display:none;position:absolute;top:36px;left:0;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.15);border:1px solid #eee;min-width:140px;z-index:1000;overflow:hidden;">
             <button onclick="logout()" style="width:100%;padding:12px 16px;border:none;background:#fff;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-align:left;color:#cc0000;" onmouseover="this.style.background='#fff0f0'" onmouseout="this.style.background='#fff'">🚪 Çıkış</button>
           </div>
         </div>
@@ -986,7 +994,7 @@ select.field-input option { background: #fff; }
     <div class="page-header">
       <div class="section-accent"></div>
       <div class="page-title">Yeni Lastik Kaydı</div>
-      <div class="page-sub">Müşteri lastiğini sisteme ekle</div>
+      <div class="page-sub" id="formPageSub">Müşteri lastiğini sisteme ekle</div>
     </div>
 
     <div class="form-card" id="formKarti" style="display:none;">
@@ -1729,17 +1737,19 @@ function applyRole() {
   if (role === 'admin') {
     pill.textContent = '👑 Yönetici ▾'; pill.classList.add('admin');
     var dd = document.getElementById('adminDropdown'); if(dd) dd.dataset.admin='1';
-    var ccb = document.getElementById('calisanCikisBtn'); if(ccb) ccb.style.display='none';
+
     formTab.classList.remove('hidden');
     hurdaForm.style.display = 'block';
     var fk = document.getElementById('formKarti'); if(fk) fk.style.display='block';
+    var fps2 = document.getElementById('formPageSub'); if(fps2) fps2.style.display='block';
   } else {
     pill.textContent = '🔧 Çalışan'; pill.classList.remove('admin');
     var dd2 = document.getElementById('adminDropdown'); if(dd2) dd2.dataset.admin='0';
-    var ccb2 = document.getElementById('calisanCikisBtn'); if(ccb2) ccb2.style.display='inline-block';
+
     formTab.classList.remove('hidden'); // Çalışan listeyi görebilir
     hurdaForm.style.display = 'none';
     var fk2 = document.getElementById('formKarti'); if(fk2) fk2.style.display='none';
+    var fps = document.getElementById('formPageSub'); if(fps) fps.style.display='none';
   }
   applyDepoForm();
 }
@@ -3799,10 +3809,15 @@ async function jsonImport(e) {
 
 // -- ADMİN DROPDOWN --
 function adminMenuToggle() {
-  if (role !== 'admin') return;
   var dd = document.getElementById('adminDropdown');
   if (!dd) return;
-  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+  if (role === 'admin') {
+    dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+  } else if (role === 'calisan') {
+    // Çalışan için sadece çıkış dropdown'u
+    var cd = document.getElementById('calisanDropdown');
+    if (cd) cd.style.display = cd.style.display === 'none' ? 'block' : 'none';
+  }
 }
 function adminMenuKapat() {
   var dd = document.getElementById('adminDropdown');
@@ -3814,6 +3829,10 @@ document.addEventListener('click', function(e) {
   var dd = document.getElementById('adminDropdown');
   if (dd && pill && !pill.contains(e.target) && !dd.contains(e.target)) {
     dd.style.display = 'none';
+  }
+  var cd = document.getElementById('calisanDropdown');
+  if (cd && pill && !pill.contains(e.target) && !cd.contains(e.target)) {
+    cd.style.display = 'none';
   }
 });
 
