@@ -3609,7 +3609,7 @@ function rotusMontajTamam() {
   rotusMesajEkle('rotus', list.length + ' araçta montaj tamamlandı:' + NL + NL + satirlar + devam);
   setTimeout(function() {
     rotusSecenekGoster([
-      { label: 'Montaj Tamamlandı'ya Git', action: function() { rotusKapat(); showPage('montaj', document.getElementById('ntab-montaj')); }},
+      { label: 'Montaj Tamamlandi Git', action: function() { rotusKapat(); showPage('montaj', document.getElementById('ntab-montaj')); }},
       { label: 'Ana Menüye Dön', action: rotusAnaSoru },
     ]);
   }, 400);
@@ -3624,7 +3624,7 @@ function rotusDepoBekleyen() {
   }
   var satirlar = list.slice(0,5).map(function(k) { return '- ' + k.plaka + ' / ' + k.isim + ' (' + k.donem + ')'; }).join(NL);
   var devam = list.length > 5 ? (NL + '...ve ' + (list.length-5) + ' kayıt daha') : '';
-  rotusMesajEkle('rotus', list.length + ' kayıt sıra bekliyor:' + NL + NL + satirlar + devam + NL + NL + 'Depo Sayım'dan sıra no atayabilirsiniz.');
+  rotusMesajEkle('rotus', list.length + ' kayıt sıra bekliyor:' + NL + NL + satirlar + devam + NL + NL + 'Depo Sayimdan sira no atayabilirsiniz.');
   setTimeout(function() {
     rotusSecenekGoster([
       { label: 'Depo Sayıma Git', action: function() { rotusKapat(); showPage('depo', document.getElementById('ntab-depo')); }},
