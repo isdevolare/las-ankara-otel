@@ -2225,7 +2225,7 @@ async function markAsGelmeyen(id) {
     showPage('gelmeyen', document.getElementById('ntab-gelmeyen'));
     return;
   }
-  if (!confirm(`${k.plaka} için müşteri gelmedi olarak işaretlensin mi? Kayıt otel lastikleri listesinden çıkıp gelmeyen müşterilere taşınacak.`)) return;
+  
   k.gelmedi = true;
   k.gelmediAt = nowTR();
   addHistory(k, 'Müşteri gelmedi olarak işaretlendi');
@@ -2394,7 +2394,7 @@ async function permanentDeleteDeleted(id) {
   const deleted = getDeleted();
   const item = deleted.find(k => k.id === id);
   const mesaj = item ? `${item.plaka} · ${item.isim} kaydı kalıcı silinsin mi? Bu işlem geri alınamaz.` : 'Kayıt kalıcı silinsin mi?';
-  if (!confirm(mesaj)) return;
+  
   await setDeleted(deleted.filter(k => k.id !== id));
   refreshAll();
   showToast('❌ Kayıt kalıcı silindi', 'success');
@@ -2714,7 +2714,7 @@ async function geciciTeslimEt(id) {
 }
 
 async function geciciSil(id) {
-  if (!confirm('Bu kaydı silmek istediğine emin misin?')) return;
+  
   await setGecici(getGecici().filter(k => k.id !== id));
   renderGecici();
   showToast('🗑️ Kayıt silindi', 'success');
@@ -3056,7 +3056,7 @@ function renderDepoListesi() {
 }
 async function removeDepoSira(id, event) {
   if (event) event.stopPropagation();
-  if (!confirm('Bu depo sıra kaydını silmek istediğinize emin misiniz?')) return;
+  
   const kayitlar = getData();
   const kayit = kayitlar.find(k => k.id === id);
   const siralar = getDepoSiralar();
@@ -3195,10 +3195,12 @@ function renderSatilan() {
 }
 
 async function deleteHurda(id) {
-  await setHurda(getHurda().filter(d=>d.id!==id));
-  closeHurdaModal();
-  renderHurda();
-  showToast('Cikma lastik silindi', 'success');
+  onayGoster('Bu cikma lastik silinecek. Emin misiniz?', async function() {
+    await setHurda(getHurda().filter(d=>d.id!==id));
+    closeHurdaModal();
+    renderHurda();
+    showToast('Cikma lastik silindi', 'success');
+  });
 }
 
 function openHurdaDetail(id) {
@@ -3469,7 +3471,7 @@ async function testVerisiYukle() {
 }
 
 async function testVerisiSil() {
-  if (!confirm('Tüm test verileri silinsin mi? Bu işlem geri alınamaz.')) return;
+  
   const testPrefixes = ['test0', 'test1', 'td', 'tm', 'tc'];
   
   // Otel lastiklerinden test kayıtlarını sil
@@ -3688,6 +3690,24 @@ function rotusGeriDon() {
     { label: 'Ana menuye don', action: rotusAnaSoru },
     { label: 'Kapat', action: rotusKapat },
   ]);
+}
+
+
+// -- ONAY MODAL --
+var _onayCallback = null;
+function onayGoster(mesaj, callback) {
+  _onayCallback = callback;
+  document.getElementById('onayMesaj').textContent = mesaj;
+  var modal = document.getElementById('onayModal');
+  modal.style.display = 'flex';
+}
+function onayOnayla() {
+  document.getElementById('onayModal').style.display = 'none';
+  if (_onayCallback) { _onayCallback(); _onayCallback = null; }
+}
+function onayReddet() {
+  document.getElementById('onayModal').style.display = 'none';
+  _onayCallback = null;
 }
 
 // Keyboard support
@@ -3940,6 +3960,19 @@ if ('serviceWorker' in navigator) {
     </div>
     <div id="rotusMesajlar" style="padding:12px;max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;"></div>
     <div id="rotusSecenekler" style="padding:8px 12px 12px;display:flex;flex-direction:column;gap:5px;border-top:1px solid #f0f0f0;"></div>
+  </div>
+</div>
+
+<!-- ONAY MODAL -->
+<div id="onayModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:14px;padding:24px;width:90%;max-width:320px;box-shadow:0 8px 40px rgba(0,0,0,0.2);text-align:center;">
+    <div style="font-size:32px;margin-bottom:12px;" id="onayIkon">&#x1F5D1;</div>
+    <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:16px;color:#111;margin-bottom:8px;">Emin misiniz?</div>
+    <div style="font-size:13px;color:#666;margin-bottom:20px;line-height:1.5;" id="onayMesaj">Bu islem geri alinamaz.</div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="onayReddet()" style="flex:1;padding:12px;border-radius:8px;border:1.5px solid #ddd;background:#f5f5f5;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;color:#555;">Vazgec</button>
+      <button id="onayOkBtn" onclick="onayOnayla()" style="flex:1;padding:12px;border-radius:8px;border:none;background:#cc0000;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;color:#fff;">Sil</button>
+    </div>
   </div>
 </div>
 </body>
