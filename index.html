@@ -1485,10 +1485,8 @@ select.field-input option { background: #fff; }
       <div id="waPreviewContent" style="max-height:420px;overflow:auto;"></div>
     </div>
     <div class="modal-actions" style="display:flex;flex-direction:column;gap:12px;">
-      <button class="btn btn-wp" style="justify-content:center;padding:14px;font-size:16px;" onclick="wpLinkGonder()">📱 WhatsApp - Takip Linki Gönder</button>
-      <button class="btn btn-wp" style="justify-content:center;padding:14px;font-size:16px;background:#128c7e;" onclick="contactCustomerFromMenu()">📱 WhatsApp - Bilgi Mesajı</button>
-      <button class="btn btn-secondary" style="justify-content:center;padding:14px;font-size:16px;background:#ea4335;color:#fff;border:none;" onclick="emailGonderMenu()">✉️ Email ile Gönder</button>
-      <button class="btn btn-secondary" style="justify-content:center;padding:14px;font-size:16px;" onclick="downloadTireFormFromMenu()">⬇️ Lastik Formu İndir</button>
+      <button class="btn btn-wp" style="justify-content:center;padding:16px;font-size:16px;font-weight:800;" onclick="wpLinkGonder()">📱 WhatsApp ile Gönder</button>
+      <button class="btn btn-secondary" style="justify-content:center;padding:14px;font-size:15px;" onclick="downloadTireFormFromMenu()">⬇️ Lastik Formu İndir</button>
     </div>
   </div>
 </div>
@@ -3953,14 +3951,14 @@ let whatsappTargetId = null;
 function wpLinkGonder() {
   const k = getData().find(d => d.id === whatsappTargetId);
   if (!k) return;
-  const link = window.location.origin + window.location.pathname + '?musteri=' + k.id;
-  const ad = k.isim ? k.isim.split(' ')[0] : 'Sayin';
-  const mesaj = 'Sayin ' + ad + ',\n\n' +
-    'Lastiginiz LAS ANKARA\'ya teslim alinmistir. ✅\n\n' +
-    '🚗 Plaka: *' + k.plaka + '*\n' +
-    '📦 Donem: ' + (k.donem||'-') + '\n\n' +
-    '👇 Lastik bilgilerinizi goruntulemek icin:\n' + link + '\n\n' +
-    '_LAS ANKARA - Professional Service_';
+  const link = 'https://isdevolare.github.io/las-ankara-otel/?musteri=' + k.id;
+  const ad = k.isim ? k.isim.split(' ')[0] : '';
+  const mesaj = 'Sayin ' + ad + ' Hanim/Bey,' + String.fromCharCode(10) + String.fromCharCode(10) +
+    'Lastiginiz LAS ANKARA Lastik Otelimize teslim alinmistir.' + String.fromCharCode(10) + String.fromCharCode(10) +
+    'Lastik bilgilerinizi goruntlemek icin asagidaki baglantiya tiklayin:' + String.fromCharCode(10) +
+    link + String.fromCharCode(10) + String.fromCharCode(10) +
+    'LAS ANKARA - Professional Service' + String.fromCharCode(10) +
+    'Tel: 0507 633 52 52';
   const tel = (k.tel||'').replace(/\D/g,'');
   const telFull = tel.startsWith('90') ? tel : '90' + tel.replace(/^0/,'');
   window.open('https://wa.me/' + telFull + '?text=' + encodeURIComponent(mesaj), '_blank');
@@ -4213,24 +4211,27 @@ if ('serviceWorker' in navigator) {
 </div>
 
 <!-- MÜŞTERİ GÖRÜNTÜLEME EKRANI -->
-<div id="musteriEkran" style="display:none;min-height:100vh;background:#f5f5f5;align-items:center;justify-content:center;padding:20px;flex-direction:column;">
-  <div style="background:#fff;border-radius:18px;box-shadow:0 8px 40px rgba(0,0,0,0.1);width:100%;max-width:420px;overflow:hidden;">
+<div id="musteriEkran" style="display:none;min-height:100vh;background:#f0f0f0;align-items:flex-start;justify-content:center;padding:20px;flex-direction:column;">
+  <div style="background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.10);width:100%;max-width:460px;overflow:hidden;margin:0 auto;">
     <!-- Header -->
-    <div style="background:#cc0000;padding:20px 24px;text-align:center;">
-      <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:22px;color:#fff;letter-spacing:-0.5px;">
-        LAS<span style="color:#fff;opacity:0.85;"> ANKARA</span>
+    <div style="background:#cc0000;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:20px;color:#fff;letter-spacing:-0.5px;">LAS ANKARA</div>
+        <div style="color:rgba(255,255,255,0.7);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;margin-top:1px;">Professional Service</div>
       </div>
-      <div style="color:rgba(255,255,255,0.75);font-size:10px;letter-spacing:0.2em;margin-top:2px;">PROFESSIONAL SERVICE</div>
+      <div style="color:rgba(255,255,255,0.6);font-size:11px;">Lastik Oteli</div>
     </div>
     <!-- İçerik -->
     <div id="musteriIcerik" style="padding:24px;">
-      <div style="text-align:center;padding:40px;color:#aaa;">Yükleniyor...</div>
+      <div style="text-align:center;padding:40px;color:#aaa;font-size:14px;">Yükleniyor...</div>
     </div>
     <!-- Footer -->
-    <div style="padding:16px 24px;border-top:1px solid #f0f0f0;text-align:center;">
-      <div style="font-size:11px;color:#aaa;">Sorularınız için</div>
-      <a href="tel:05076335252" style="font-family:'Montserrat',sans-serif;font-size:16px;font-weight:800;color:#cc0000;text-decoration:none;">0507 633 52 52</a>
-      <div style="font-size:11px;color:#aaa;margin-top:4px;">Etimesgut / Ankara</div>
+    <div style="padding:16px 24px;background:#f8f8f8;border-top:1px solid #eee;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;color:#111;">LAS ANKARA</div>
+        <div style="font-size:10px;color:#aaa;letter-spacing:0.1em;">PROFESSIONAL SERVICE</div>
+      </div>
+      <a href="tel:05076335252" style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:800;color:#cc0000;text-decoration:none;">0507 633 52 52</a>
     </div>
   </div>
 </div>
