@@ -3950,6 +3950,41 @@ function openWhatsApp(tel) {
 
 let whatsappTargetId = null;
 
+function wpLinkGonder() {
+  const k = getData().find(d => d.id === whatsappTargetId);
+  if (!k) return;
+  const link = window.location.origin + window.location.pathname + '?musteri=' + k.id;
+  const ad = k.isim ? k.isim.split(' ')[0] : 'Sayin';
+  const mesaj = 'Sayin ' + ad + ',\n\n' +
+    'Lastiginiz LAS ANKARA\'ya teslim alinmistir. ✅\n\n' +
+    '🚗 Plaka: *' + k.plaka + '*\n' +
+    '📦 Donem: ' + (k.donem||'-') + '\n\n' +
+    '👇 Lastik bilgilerinizi goruntulemek icin:\n' + link + '\n\n' +
+    '_LAS ANKARA - Professional Service_';
+  const tel = (k.tel||'').replace(/\D/g,'');
+  const telFull = tel.startsWith('90') ? tel : '90' + tel.replace(/^0/,'');
+  window.open('https://wa.me/' + telFull + '?text=' + encodeURIComponent(mesaj), '_blank');
+  closeWhatsappMenu();
+}
+
+function emailGonderMenu() {
+  const k = getData().find(d => d.id === whatsappTargetId);
+  if (!k) return;
+  const konu = encodeURIComponent('LAS ANKARA - Lastik Bilginiz');
+  const mesaj = 'Sayin ' + k.isim + ',\n\n' +
+    'Lastiginiz otele alinmistir.\n\n' +
+    'Plaka: ' + k.plaka + '\n' +
+    'Ebat: ' + (k.ebat||'-') + '\n' +
+    'Adet: ' + (k.adet||4) + ' adet\n' +
+    'Donem: ' + (k.donem||'-') + '\n' +
+    (k.sira ? 'Depo Sirasi: ' + k.sira + '\n' : '') +
+    '\nLastiginizi teslim almak icin bizi arayin.\n\n' +
+    'LAS ANKARA - Professional Service\n' +
+    'Tel: 0507 633 52 52';
+  window.open('mailto:?subject=' + konu + '&body=' + encodeURIComponent(mesaj), '_blank');
+  closeWhatsappMenu();
+}
+
 function closeWhatsappMenu() {
   const m = document.getElementById('whatsappModal');
   if (m) m.classList.remove('open');
