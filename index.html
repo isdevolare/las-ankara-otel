@@ -3409,7 +3409,20 @@ function showToast(msg, type='') {
     if (ls) ls.style.display = 'none';
     if (as) { as.style.display = 'none'; as.classList.remove('active'); }
     if (me) me.style.display = 'flex';
-    loadAllFromFirebase().then(function() { musteriGoster(musteriId); });
+    // Firebase'den direkt veriyi çek
+    var FB_URL = 'https://lasankarabase-default-rtdb.europe-west1.firebasedatabase.app';
+    fetch(FB_URL + '/otel.json')
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        var list = Array.isArray(data) ? data : (data ? Object.values(data) : []);
+        var k = list.find(function(d){ return d && d.id === musteriId; });
+        if (me) me.style.display = 'flex';
+        musteriGosterDirekt(k, musteriId);
+      })
+      .catch(function() {
+        if (me) me.style.display = 'flex';
+        musteriGosterDirekt(null, musteriId);
+      });
     return;
   }
   // Normal giriş
@@ -3852,9 +3865,9 @@ document.addEventListener('click', function(e) {
 
 
 // ── MÜŞTERİ GÖRÜNTÜLEME ──
-function musteriGoster(id) {
+function musteriGosterDirekt(k, id) {
   const el = document.getElementById('musteriIcerik');
-  const k = getData().find(d => d.id === id);
+  if (!el) return;
   
   if (!k) {
     el.innerHTML = '<div style="text-align:center;padding:40px;">' +
