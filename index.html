@@ -1812,28 +1812,48 @@ function handleMultiplePhotos(e) {
   });
   
   Promise.all(promises).then(function(results) {
-    photoB64.form = results[0]; // ilk fotoğraf ana foto
-    photoB64.formExtra = results.slice(1); // diğerleri
-    
-    // Önizleme göster
-    var preview = document.getElementById('formPhotoPreview');
-    var zone = document.getElementById('photoZone');
-    if (results.length === 1) {
-      preview.src = results[0];
-      preview.style.display = 'block';
-      zone.style.display = 'none';
-    } else {
-      // Çoklu önizleme
-      zone.innerHTML = '<div style="display:flex;gap:6px;flex-wrap:wrap;padding:8px;">' +
-        results.map(function(r, i) {
-          return '<div style="position:relative;">' +
-            '<img src="' + r + '" style="width:80px;height:80px;object-fit:cover;border-radius:6px;">' +
-            '</div>';
-        }).join('') +
-        '<div style="font-size:11px;color:#888;width:100%;text-align:center;padding:4px 0;">' + results.length + ' fotoğraf seçildi</div>' +
-      '</div>';
-    }
+    // Mevcut fotolara ekle (üstüne yazma)
+    var mevcutlar = photoB64.form ? [photoB64.form].concat(photoB64.formExtra || []) : [];
+    var hepsi = mevcutlar.concat(results);
+    photoB64.form = hepsi[0] || '';
+    photoB64.formExtra = hepsi.slice(1);
+    renderFormPhotoPreviews();
   });
+}
+
+function renderFormPhotoPreviews() {
+  var allPhotos = photoB64.form ? [photoB64.form].concat(photoB64.formExtra || []) : [];
+  var preview = document.getElementById('formPhotoPreview');
+  var zone = document.getElementById('photoZone');
+  
+  if (!allPhotos.length) {
+    preview.style.display = 'none';
+    zone.style.display = 'flex';
+    zone.innerHTML = '<input type="file" accept="image/*" multiple onchange="handleMultiplePhotos(event)" id="photoInput"><div class="photo-zone-icon">📸</div><div class="photo-zone-text">Fotoğraf eklemek için tıklayın veya dosya sürükleyin</div>';
+    return;
+  }
+  
+  preview.style.display = 'none';
+  zone.style.display = 'block';
+  zone.innerHTML = '<div style="display:flex;gap:8px;flex-wrap:wrap;padding:8px;">' +
+    allPhotos.map(function(r, i) {
+      return '<div style="position:relative;display:inline-block;">' +
+        '<img src="' + r + '" style="width:90px;height:90px;object-fit:cover;border-radius:8px;display:block;">' +
+        '<button onclick="formFotoSil(' + i + ')" type="button" style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:#cc0000;color:#fff;border:none;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1;padding:0;">✕</button>' +
+      '</div>';
+    }).join('') +
+    '<label style="width:90px;height:90px;border:2px dashed #ddd;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;color:#bbb;flex-shrink:0;">' +
+      '➕<input type="file" accept="image/*" multiple onchange="handleMultiplePhotos(event)" style="display:none;">' +
+    '</label>' +
+  '</div>';
+}
+
+function formFotoSil(i) {
+  var allPhotos = photoB64.form ? [photoB64.form].concat(photoB64.formExtra || []) : [];
+  allPhotos.splice(i, 1);
+  photoB64.form = allPhotos[0] || '';
+  photoB64.formExtra = allPhotos.slice(1);
+  renderFormPhotoPreviews();
 }
 
 function handlePhoto(e, target) {
