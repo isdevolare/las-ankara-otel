@@ -99,6 +99,7 @@
           (k.sira ? kart('Depo Sırası', k.sira) : '') +
           (k.dis ? kart('Diş Derinliği', k.dis + ' mm') : '') +
         '</div>' +
+        (k.fotolar && k.fotolar.length ? '<div style="margin-bottom:16px;"><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Fotoğraflar</div><div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;">' + k.fotolar.map(function(f){ return '<img src="' + f + '" style="height:100px;min-width:120px;object-fit:cover;border-radius:8px;flex-shrink:0;">'; }).join('') + '</div></div>' : (k.foto ? '<div style="margin-bottom:16px;"><img src="' + k.foto + '" style="width:100%;border-radius:8px;max-height:200px;object-fit:cover;"></div>' : '')) +
         (k.not ? '<div class="not-box"><strong>Not:</strong> ' + k.not + '</div>' : '') +
         '<div style="font-size:11px;color:#bbb;text-align:center;margin-top:8px;">LAS ANKARA Lastik Oteli</div>';
     }

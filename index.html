@@ -11,6 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="LAS ANKARA">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛞</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1072,7 +1073,7 @@ select.field-input option { background: #fff; }
         <div class="field full">
           <div class="field-label">Lastik Fotoğrafı</div>
           <div class="photo-zone" id="photoZone">
-            <input type="file" accept="image/*" onchange="handlePhoto(event,'form')" id="photoInput">
+            <input type="file" accept="image/*" multiple onchange="handleMultiplePhotos(event)" id="photoInput">
             <div class="photo-zone-icon">📸</div>
             <div class="photo-zone-text">Fotoğraf eklemek için tıklayın veya dosya sürükleyin</div>
           </div>
@@ -1797,6 +1798,44 @@ function init() {
 }
 
 // ── PHOTO ──
+function handleMultiplePhotos(e) {
+  var files = Array.from(e.target.files);
+  if (!files.length) return;
+  
+  // Tüm fotoğrafları base64'e çevir
+  var promises = files.map(function(file) {
+    return new Promise(function(resolve) {
+      var reader = new FileReader();
+      reader.onload = function(ev) { resolve(ev.target.result); };
+      reader.readAsDataURL(file);
+    });
+  });
+  
+  Promise.all(promises).then(function(results) {
+    photoB64.form = results[0]; // ilk fotoğraf ana foto
+    photoB64.formExtra = results.slice(1); // diğerleri
+    
+    // Önizleme göster
+    var preview = document.getElementById('formPhotoPreview');
+    var zone = document.getElementById('photoZone');
+    if (results.length === 1) {
+      preview.src = results[0];
+      preview.style.display = 'block';
+      zone.style.display = 'none';
+    } else {
+      // Çoklu önizleme
+      zone.innerHTML = '<div style="display:flex;gap:6px;flex-wrap:wrap;padding:8px;">' +
+        results.map(function(r, i) {
+          return '<div style="position:relative;">' +
+            '<img src="' + r + '" style="width:80px;height:80px;object-fit:cover;border-radius:6px;">' +
+            '</div>';
+        }).join('') +
+        '<div style="font-size:11px;color:#888;width:100%;text-align:center;padding:4px 0;">' + results.length + ' fotoğraf seçildi</div>' +
+      '</div>';
+    }
+  });
+}
+
 function handlePhoto(e, target) {
   const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
