@@ -3952,18 +3952,19 @@ function openWhatsApp(tel) {
 let whatsappTargetId = null;
 
 function wpLinkGonder() {
-  const k = getData().find(d => d.id === whatsappTargetId);
+  var NL = String.fromCharCode(10);
+  var k = getData().find(function(d){ return d.id === whatsappTargetId; });
   if (!k) return;
-  const link = 'https://isdevolare.github.io/las-ankara-otel/?musteri=' + k.id;
-  const ad = k.isim ? k.isim.split(' ')[0] : '';
-  const mesaj = 'Sayin ' + ad + ' Hanim/Bey,' + String.fromCharCode(10) + String.fromCharCode(10) +
-    'Lastiginiz LAS ANKARA Lastik Otelimize teslim alinmistir.' + String.fromCharCode(10) + String.fromCharCode(10) +
-    'Lastik bilgilerinizi goruntlemek icin asagidaki baglantiya tiklayin:' + String.fromCharCode(10) +
-    link + String.fromCharCode(10) + String.fromCharCode(10) +
-    'LAS ANKARA - Professional Service' + String.fromCharCode(10) +
+  var link = window.location.origin + window.location.pathname + '?musteri=' + k.id;
+  var mesaj = 'Değerli Müşterimiz,' + NL + NL +
+    'Lastiğiniz LAS ANKARA Lastik Oteline alınmıştır.' + NL + NL +
+    'Lastik bilgilerinizi görüntülemek için aşağıdaki bağlantıya tıklayın:' + NL +
+    link + NL + NL +
+    'Bizi tercih ettiğiniz için teşekkür ederiz.' + NL + NL +
+    'LAS ANKARA - Profesyonel Servis' + NL +
     'Tel: 0507 633 52 52';
-  const tel = (k.tel||'').replace(/\D/g,'');
-  const telFull = tel.startsWith('90') ? tel : '90' + tel.replace(/^0/,'');
+  var tel = (k.tel||'').replace(/[^0-9]/g,'');
+  var telFull = tel.startsWith('90') ? tel : '90' + tel.replace(/^0/,'');
   window.open('https://wa.me/' + telFull + '?text=' + encodeURIComponent(mesaj), '_blank');
   closeWhatsappMenu();
 }
