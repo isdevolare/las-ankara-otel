@@ -1943,7 +1943,8 @@ async function saveKayit() {
       tel,
       not: document.getElementById('f_not').value.trim(),
       sira,
-      foto: photoB64.form || item.foto || ''
+      foto: photoB64.form || item.foto || '',
+      fotolar: photoB64.form ? [photoB64.form].concat(photoB64.formExtra || []) : (item.fotolar || [])
     });
     addHistory(item, 'Kayıt düzenlendi');
     if (oldSira !== sira) addHistory(item, `Sıra no güncellendi: ${oldSira || '—'} → ${sira || '—'}`);
@@ -1967,7 +1968,8 @@ async function saveKayit() {
     tel,
     not: document.getElementById('f_not').value.trim(),
     sira,
-    foto: photoB64.form,
+    foto: photoB64.form || '',
+    fotolar: photoB64.form ? [photoB64.form].concat(photoB64.formExtra || []) : [],
     tarih: new Date().toLocaleDateString('tr-TR'),
     montaj: false,
     teslim: false,
