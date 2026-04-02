@@ -3403,10 +3403,13 @@ function showToast(msg, type='') {
   const params = new URLSearchParams(window.location.search);
   const musteriId = params.get('musteri');
   if (musteriId) {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appScreen').style.display = 'none';
-    document.getElementById('musteriEkran').style.display = 'flex';
-    loadAllFromFirebase().then(() => musteriGoster(musteriId));
+    var ls = document.getElementById('loginScreen');
+    var as = document.getElementById('appScreen');
+    var me = document.getElementById('musteriEkran');
+    if (ls) ls.style.display = 'none';
+    if (as) { as.style.display = 'none'; as.classList.remove('active'); }
+    if (me) me.style.display = 'flex';
+    loadAllFromFirebase().then(function() { musteriGoster(musteriId); });
     return;
   }
   // Normal giriş
