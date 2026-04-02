@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LAS ANKARA - Lastik Bilgim</title>
+  <meta name="theme-color" content="#cc0000">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #f0f0f0; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 20px; }
+    .kart { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.10); width: 100%; max-width: 460px; overflow: hidden; margin: 20px auto; }
+    .header { background: #cc0000; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 22px; color: #fff; }
+    .logo-sub { font-size: 9px; color: rgba(255,255,255,0.7); letter-spacing: 0.2em; text-transform: uppercase; margin-top: 2px; }
+    .header-sag { color: rgba(255,255,255,0.6); font-size: 11px; }
+    .icerik { padding: 24px; }
+    .plaka { font-family: 'Montserrat', sans-serif; font-size: 32px; font-weight: 900; color: #111; text-align: center; letter-spacing: 2px; margin-bottom: 4px; }
+    .isim { font-size: 16px; font-weight: 600; color: #444; text-align: center; margin-bottom: 20px; }
+    .durum-box { border-radius: 10px; padding: 14px 16px; text-align: center; margin-bottom: 20px; }
+    .durum-ikon { font-size: 28px; margin-bottom: 6px; }
+    .durum-text { font-weight: 700; font-size: 15px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .kart-item { background: #f8f8f8; border-radius: 8px; padding: 12px; }
+    .kart-baslik { font-size: 10px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .kart-deger { font-size: 14px; font-weight: 700; color: #111; }
+    .not-box { background: #fff8ec; border-left: 3px solid #e67e00; border-radius: 6px; padding: 12px; font-size: 13px; color: #555; margin-bottom: 16px; }
+    .footer { padding: 16px 24px; background: #f8f8f8; border-top: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; }
+    .footer-logo { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 13px; color: #111; }
+    .footer-sub { font-size: 10px; color: #aaa; letter-spacing: 0.1em; }
+    .footer-tel { font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 800; color: #cc0000; text-decoration: none; }
+    .yukleniyor { text-align: center; padding: 60px 20px; color: #aaa; }
+    .yukleniyor-ikon { font-size: 48px; margin-bottom: 12px; animation: spin 1s linear infinite; display: inline-block; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .hata { text-align: center; padding: 60px 20px; }
+    .hata-ikon { font-size: 48px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <div class="kart">
+    <div class="header">
+      <div>
+        <div class="logo">LAS ANKARA</div>
+        <div class="logo-sub">Professional Service</div>
+      </div>
+      <div class="header-sag">Lastik Oteli</div>
+    </div>
+    <div class="icerik" id="icerik">
+      <div class="yukleniyor">
+        <div class="yukleniyor-ikon">⏳</div>
+        <div style="font-weight:600;color:#555;margin-bottom:4px;">Yükleniyor...</div>
+        <div style="font-size:12px;">Lastik bilgileriniz getiriliyor</div>
+      </div>
+    </div>
+    <div class="footer">
+      <div>
+        <div class="footer-logo">LAS ANKARA</div>
+        <div class="footer-sub">PROFESSIONAL SERVICE</div>
+      </div>
+      <a href="tel:05076335252" class="footer-tel">0507 633 52 52</a>
+    </div>
+  </div>
+
+  <script>
+    var FB_URL = 'https://lasankarabase-default-rtdb.europe-west1.firebasedatabase.app';
+    var params = new URLSearchParams(window.location.search);
+    var musteriId = params.get('id');
+
+    function kart(baslik, deger) {
+      return '<div class="kart-item"><div class="kart-baslik">' + baslik + '</div><div class="kart-deger">' + deger + '</div></div>';
+    }
+
+    function goster(k) {
+      var el = document.getElementById('icerik');
+      if (!k) {
+        el.innerHTML = '<div class="hata"><div class="hata-ikon">🔍</div><div style="font-weight:700;color:#333;margin-bottom:8px;">Kayıt Bulunamadı</div><div style="font-size:13px;color:#888;">Bu link geçersiz veya süresi dolmuş olabilir.<br><br>Lütfen işyerimizi arayın.</div></div>';
+        return;
+      }
+      var durum, durumRenk, durumIkon;
+      if (k.teslim) { durum = 'Teslim Edildi'; durumRenk = '#1a8a3a'; durumIkon = '✅'; }
+      else if (k.montaj) { durum = 'Montaj Tamamlandı'; durumRenk = '#1a8a3a'; durumIkon = '✅'; }
+      else if (k.sira) { durum = 'Depoda Bekliyor'; durumRenk = '#e67e00'; durumIkon = '📦'; }
+      else { durum = 'Otele Alındı'; durumRenk = '#3a6abf'; durumIkon = '🏨'; }
+
+      el.innerHTML =
+        '<div class="plaka">' + k.plaka + '</div>' +
+        '<div class="isim">' + k.isim + '</div>' +
+        '<div class="durum-box" style="background:' + durumRenk + '18;border:1.5px solid ' + durumRenk + '44;">' +
+          '<div class="durum-ikon">' + durumIkon + '</div>' +
+          '<div class="durum-text" style="color:' + durumRenk + ';">' + durum + '</div>' +
+        '</div>' +
+        '<div class="grid">' +
+          kart('Lastik Ebatı', k.ebat || '-') +
+          kart('Adet', (k.adet || 4) + ' adet') +
+          kart('Lastik Tipi', k.tip || '-') +
+          kart('Marka', k.marka || '-') +
+          kart('Dönem', k.donem || '-') +
+          kart('Giriş Tarihi', k.tarih || '-') +
+          (k.sira ? kart('Depo Sırası', k.sira) : '') +
+          (k.dis ? kart('Diş Derinliği', k.dis + ' mm') : '') +
+        '</div>' +
+        (k.not ? '<div class="not-box"><strong>Not:</strong> ' + k.not + '</div>' : '') +
+        '<div style="font-size:11px;color:#bbb;text-align:center;margin-top:8px;">LAS ANKARA Lastik Oteli</div>';
+    }
+
+    if (!musteriId) {
+      goster(null);
+    } else {
+      fetch(FB_URL + '/otel.json')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var list = Array.isArray(data) ? data : (data ? Object.values(data) : []);
+          var k = list.find(function(d) { return d && d.id === musteriId; });
+          goster(k || null);
+        })
+        .catch(function() { goster(null); });
+    }
+  </script>
+</body>
+</html>

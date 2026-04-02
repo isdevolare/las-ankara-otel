@@ -3968,7 +3968,7 @@ function wpLinkGonder() {
   var NL = String.fromCharCode(10);
   var k = getData().find(function(d){ return d.id === whatsappTargetId; });
   if (!k) return;
-  var link = window.location.origin + window.location.pathname + '?musteri=' + k.id;
+  var link = window.location.origin + window.location.pathname.replace('index.html','').replace(/\/$/,'') + '/musteri.html?id=' + k.id;
   var mesaj = 'Değerli Müşterimiz,' + NL + NL +
     'Lastiğiniz LAS ANKARA Lastik Oteline alınmıştır.' + NL + NL +
     'Lastik bilgilerinizi görüntülemek için aşağıdaki bağlantıya tıklayın:' + NL +
