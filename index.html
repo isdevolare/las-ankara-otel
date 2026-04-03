@@ -1652,7 +1652,6 @@ function startRealtimeSync() {
 
 // Load all data once at startup
 async function loadAllFromFirebase() {
-  showLoadingOverlay(true);
   try {
     const [otel, hurda, deleted, depo_sira, gecici] = await Promise.all([
       fbGet('otel'), fbGet('hurda'), fbGet('deleted'), fbGet('depo_sira'), fbGet('gecici')
@@ -1663,9 +1662,8 @@ async function loadAllFromFirebase() {
     _cache.depo_sira = depo_sira || {};
     _cache.gecici = (Array.isArray(gecici) ? gecici : Object.values(gecici || {})).filter(Boolean);
   } catch(err) {
-    showToast('⚠️ Firebase bağlantı hatası', 'error');
+    showToast('Baglanti hatasi, yenileyin', 'error');
   }
-  showLoadingOverlay(false);
   _fbReady = true;
   startRealtimeSync();
 }
