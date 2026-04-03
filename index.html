@@ -980,7 +980,7 @@ select.field-input option { background: #fff; }
 </div>
 
     <div class="filter-bar">
-      <input type="text" placeholder="🔍 Plaka, isim veya sıra no ara..." id="searchInput" oninput="renderCards()">
+      <input type="text" placeholder="🔍 Plaka, isim veya sıra no ara..." id="searchInput" oninput="renderCardsDebounce()">
       <select id="filterDonem" onchange="renderCards()">
         <option value="">Tüm Dönemler</option>
       </select>
@@ -2105,6 +2105,12 @@ function depoAra() {
   `).join('');
 }
 
+var _renderCardsTimer = null;
+function renderCardsDebounce() {
+  clearTimeout(_renderCardsTimer);
+  _renderCardsTimer = setTimeout(renderCards, 250);
+}
+
 function renderCards() {
   const all = getData();
   const search = document.getElementById('searchInput').value.toLowerCase();
@@ -3050,8 +3056,34 @@ async function depoEkle() {
 
   document.getElementById('depoSiraInput').value = '';
   document.getElementById('depoPlakaSiraInput').value = '';
-  refreshAll();
-  setTimeout(() => { msg.textContent = ''; }, 4000);
+  document.getElementById('depoSiraInput').focus();
+  // Sadece gerekli sekmeleri güncelle - refreshAll yerine
+  renderCards();
+  renderDepoListesi();
+  renderOteleAlinan();
+  updateTabCounts();
+  setTimeout(function() { msg.textContent = ''; }, 3000);
+}
+
+function updateTabCounts() {
+  var data = getData();
+  var aktif = data.filter(function(k) { return !k.teslim && !k.gelmedi; });
+  var otelCount = document.getElementById('count-otel');
+  var montajCount = document.getElementById('count-montaj');
+  var gelmeCount = document.getElementById('count-gelmeyen');
+  var arsivCount = document.getElementById('count-arsiv');
+  var silCount = document.getElementById('count-deleted');
+  if (otelCount) otelCount.textContent = aktif.filter(function(k){ return !k.montaj && k.sira; }).length;
+  if (montajCount) montajCount.textContent = aktif.filter(function(k){ return k.montaj; }).length;
+  if (gelmeCount) gelmeCount.textContent = data.filter(function(k){ return k.gelmedi; }).length;
+  if (arsivCount) arsivCount.textContent = data.filter(function(k){ return k.teslim; }).length;
+  if (silCount) silCount.textContent = getDeleted().length;
+}
+
+var _depoSearchTimer = null;
+function depoSearchDebounce() {
+  clearTimeout(_depoSearchTimer);
+  _depoSearchTimer = setTimeout(depoSearch, 300);
 }
 
 function depoSearch() {
