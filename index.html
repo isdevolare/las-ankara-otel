@@ -14,7 +14,6 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛞</text></svg>">
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1584,22 +1583,17 @@ function refreshAll() {
 
 
 // ── FIREBASE CONFIG ──
-// Firebase init
+// Firebase Auth init
 const firebaseConfig = {
   apiKey: "AIzaSyCpOjpC39hZG20iW5DqHz3pN13UrIXr3II",
   authDomain: "lasankarabase.firebaseapp.com",
-  databaseURL: "https://lasankarabase-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "lasankarabase",
-  storageBucket: "lasankarabase.firebasestorage.app",
-  messagingSenderId: "451616245870",
   appId: "1:451616245870:web:a98503047d6eaf282afe7f"
 };
-// Firebase zaten yüklüyse tekrar init etme
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
 const FB_AUTH = firebase.auth();
 const FB_URL = 'https://lasankarabase-default-rtdb.europe-west1.firebasedatabase.app';
+var _authToken = null; // Token bir kez alınır, cache'lenir
 
 // In-memory cache
 let _cache = { otel: [], hurda: [], deleted: [], depo_sira: {}, gecici: [] };
@@ -1607,23 +1601,17 @@ let _fbReady = false;
 let _listeners = [];
 
 function fbGet(path) {
-  const user = FB_AUTH.currentUser;
-  const tokenPromise = user ? user.getIdToken() : Promise.resolve(null);
-  return tokenPromise.then(function(token) {
-    return fetch(FB_URL + '/' + path + '.json' + (token ? '?auth=' + token : ''))
-      .then(function(r) { return r.json(); })
-      .then(function(d) { return d || (path.includes('depo') ? {} : []); });
-  });
+  const tok = _authToken;
+  const url = FB_URL + '/' + path + '.json' + (tok ? '?auth=' + tok : '');
+  return fetch(url).then(r => r.json()).then(d => d || (path.includes('depo') ? {} : []));
 }
 function fbSet(path, data) {
-  const user2 = FB_AUTH.currentUser;
-  const tokenPromise2 = user2 ? user2.getIdToken() : Promise.resolve(null);
-  return tokenPromise2.then(function(token2) {
-    return fetch(FB_URL + '/' + path + '.json' + (token2 ? '?auth=' + token2 : ''), {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
+  const tok2 = _authToken;
+  const url2 = FB_URL + '/' + path + '.json' + (tok2 ? '?auth=' + tok2 : '');
+  return fetch(url2, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
   });
 }
 function fbPatch(path, data) {
@@ -3534,7 +3522,23 @@ function showToast(msg, type='') {
       });
     return;
   }
-  // Firebase Auth onAuthStateChanged hallediyor
+  // Firebase Auth state kontrol
+  FB_AUTH.onAuthStateChanged(function(user) {
+    var params = new URLSearchParams(window.location.search);
+    var musteriId = params.get('id') || params.get('musteri');
+    if (musteriId) return;
+    if (user) {
+      user.getIdToken().then(function(token) {
+        _authToken = token;
+        role = 'admin';
+        localStorage.setItem('la_role', 'admin');
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('appScreen').classList.add('active');
+        applyRole();
+        loadAllFromFirebase().then(function() { init(); });
+      });
+    }
+  });
 })();
 
 
@@ -3647,7 +3651,7 @@ function emailIzinliMi(email) {
 }
 
 
-// ── EMAIL AUTH ──
+// ── LOGIN ──
 function emailIleGiris() {
   var email = document.getElementById('loginEmail').value.trim();
   var sifre = document.getElementById('loginSifre').value;
@@ -3655,47 +3659,40 @@ function emailIleGiris() {
   if (!email || !sifre) { hata.textContent = 'E-posta ve şifre giriniz.'; return; }
   hata.textContent = 'Giriş yapılıyor...';
   FB_AUTH.signInWithEmailAndPassword(email, sifre).then(function(result) {
-    hata.textContent = '';
-    girisSonrasiAc(result.user);
+    return result.user.getIdToken();
+  }).then(function(token) {
+    _authToken = token;
+    // 50 dakikada bir yenile
+    setTimeout(function() {
+      var u = FB_AUTH.currentUser;
+      if (u) u.getIdToken(true).then(function(t){ _authToken = t; });
+    }, 50 * 60 * 1000);
+    document.getElementById('loginHata').textContent = '';
+    role = 'admin';
+    localStorage.setItem('la_role', 'admin');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').classList.add('active');
+    applyRole();
+    loadAllFromFirebase().then(function() { init(); });
   }).catch(function(err) {
+    var hata = document.getElementById('loginHata');
     if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-      hata.textContent = '❌ E-posta veya şifre hatalı.';
+      hata.textContent = 'E-posta veya sifre hatali.';
     } else {
-      hata.textContent = '❌ Giriş başarısız.';
+      hata.textContent = 'Giris basarisiz.';
     }
   });
 }
 
-function girisSonrasiAc(user) {
-  role = 'admin';
-  localStorage.setItem('la_role', 'admin');
-  localStorage.setItem('la_user', user.email);
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('appScreen').classList.add('active');
-  applyRole();
-  if (!_fbReady) {
-    loadAllFromFirebase().then(function() { init(); });
-  } else {
-    init();
-  }
-}
 
-// Sayfa açılınca auth durumunu kontrol et
-FB_AUTH.onAuthStateChanged(function(user) {
-  var params = new URLSearchParams(window.location.search);
-  var musteriId = params.get('id') || params.get('musteri');
-  if (musteriId) return; // Müşteri sayfası - auth gerekmez
-  
-  if (user) {
-    girisSonrasiAc(user);
-  }
-});
+
+
 
 function logout() {
+  _authToken = null;
   FB_AUTH.signOut().then(function() {
-    pin = ''; role = 'admin';
+    role = 'admin';
     localStorage.removeItem('la_role');
-    localStorage.removeItem('la_user');
     document.getElementById('appScreen').classList.remove('active');
     document.getElementById('loginScreen').style.display = 'flex';
   });
@@ -4086,6 +4083,19 @@ function musteriKart(baslik, deger) {
 
 function musteriLinkOlustur(id) {
   return window.location.origin + window.location.pathname + '?musteri=' + id;
+}
+
+
+// ── AUTH TOKEN ──
+async function getToken() {
+  const user = FB_AUTH.currentUser;
+  if (!user) return null;
+  if (!_authToken) {
+    _authToken = await user.getIdToken();
+    // 50 dakikada bir yenile
+    setTimeout(function() { _authToken = null; }, 50 * 60 * 1000);
+  }
+  return _authToken;
 }
 
 // Keyboard support
