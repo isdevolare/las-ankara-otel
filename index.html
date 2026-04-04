@@ -1712,11 +1712,23 @@ function showLoadingOverlay(show) {
 
 // ── STORAGE (Firebase-backed) ──
 const getData = () => _cache.otel;
-const setData = async d => { _cache.otel = d; await fbSet('otel', d); };
+const setData = async d => { 
+  _cache.otel = d; 
+  try { localStorage.setItem('lc_otel', JSON.stringify(d)); } catch(e) {}
+  await fbSet('otel', d); 
+};
 const getHurda = () => _cache.hurda;
-const setHurda = async d => { _cache.hurda = d; await fbSet('hurda', d); };
+const setHurda = async d => { 
+  _cache.hurda = d; 
+  try { localStorage.setItem('lc_hurda', JSON.stringify(d)); } catch(e) {}
+  await fbSet('hurda', d); 
+};
 const getDeleted = () => _cache.deleted;
-const setDeleted = async d => { _cache.deleted = d; await fbSet('deleted', d); };
+const setDeleted = async d => { 
+  _cache.deleted = d; 
+  try { localStorage.setItem('lc_deleted', JSON.stringify(d)); } catch(e) {}
+  await fbSet('deleted', d); 
+};
 
 // ── LOGIN ──
 function setRole(r, el) {
@@ -3572,14 +3584,43 @@ function showToast(msg, type='') {
     var musteriId = params.get('id') || params.get('musteri');
     if (musteriId) return;
     if (user) {
+      // Önce localStorage cache'den hızlıca göster
+      try {
+        var cachedOtel = localStorage.getItem('lc_otel');
+        var cachedHurda = localStorage.getItem('lc_hurda');
+        var cachedDeleted = localStorage.getItem('lc_deleted');
+        if (cachedOtel) _cache.otel = JSON.parse(cachedOtel);
+        if (cachedHurda) _cache.hurda = JSON.parse(cachedHurda);
+        if (cachedDeleted) _cache.deleted = JSON.parse(cachedDeleted);
+      } catch(e) {}
+
+      role = 'admin';
+      localStorage.setItem('la_role', 'admin');
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('appScreen').classList.add('active');
+      applyRole();
+      
+      // Cache varsa hemen göster
+      if (_cache.otel && _cache.otel.length > 0) {
+        init();
+      }
+
+      // Arka planda Firebase'den güncelle
       user.getIdToken().then(function(token) {
         _authToken = token;
-        role = 'admin';
-        localStorage.setItem('la_role', 'admin');
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('appScreen').classList.add('active');
-        applyRole();
-        loadAllFromFirebase().then(function() { init(); });
+        return loadAllFromFirebase();
+      }).then(function() {
+        // Verileri yenile ama sayfayı sıfırlama
+        renderCards();
+        renderMontajTamam();
+        renderOteleAlinan();
+        renderDepoListesi();
+        renderHurda();
+        renderGelmeyen();
+        renderArsiv();
+        renderDeleted();
+        updateTabCounts();
+        if (!_cache.otel || _cache.otel.length === 0) init();
       });
     }
   });
