@@ -929,18 +929,31 @@ select.field-input option { background: #fff; }
 
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
   <div class="stats-bar" id="statsBar" style="margin-bottom:0;flex:1;"></div>
-  <div id="miniMaskot" style="flex-shrink:0;opacity:0.15;transition:opacity 0.3s;cursor:pointer;position:relative;" 
-    onmouseover="this.style.opacity='0.9';document.getElementById('miniSapka').style.transform='rotate(-35deg) translate(8px,-12px)';document.getElementById('miniEl').style.transform='rotate(-40deg)';document.getElementById('miniEl').style.opacity='1';document.getElementById('rotusBalon').style.opacity='1';document.getElementById('rotusBalon').style.transform='scale(1)';" 
-    onmouseout="this.style.opacity='0.15';document.getElementById('miniSapka').style.transform='';document.getElementById('miniEl').style.transform='';document.getElementById('miniEl').style.opacity='0';document.getElementById('rotusBalon').style.opacity='0';document.getElementById('rotusBalon').style.transform='scale(0)';"
+  <div id="miniMaskot" style="flex-shrink:0;opacity:1;transition:opacity 0.3s;cursor:pointer;position:relative;" 
+    onmouseover="document.getElementById('miniSapka').style.transform='rotate(-35deg) translate(8px,-12px)';document.getElementById('miniEl').style.transform='rotate(-40deg)';document.getElementById('miniEl').style.opacity='1';document.getElementById('rotusBalon').style.opacity='1';document.getElementById('rotusBalon').style.transform='scale(1)';" 
+    onmouseout="document.getElementById('miniSapka').style.transform='';document.getElementById('miniEl').style.transform='';document.getElementById('miniEl').style.opacity='0';document.getElementById('rotusBalon').style.opacity='0';document.getElementById('rotusBalon').style.transform='scale(0)';"
     onclick="rotusChat()">
     <style>
       #miniSapka { transition: transform 0.35s cubic-bezier(.34,1.56,.64,1); transform-origin: 17px 10px; }
       #miniEl { transition: transform 0.35s cubic-bezier(.34,1.56,.64,1); transform-origin: 4px 48px; opacity:0; }
       #rotusBalon { opacity:0; transform:scale(0); transform-origin:bottom right; transition:all 0.3s cubic-bezier(.34,1.56,.64,1); pointer-events:none; }
+      #miniMaskot { animation: rotusBounce 2s ease-in-out infinite; }
+      @keyframes rotusBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+      .lastik-anim { position:absolute; animation: lastikYuvarlan 2.5s ease-in infinite; opacity:0; font-size:18px; }
+      @keyframes lastikYuvarlan {
+        0%   { right:-60px; bottom:10px; opacity:1; transform:rotate(0deg); }
+        80%  { right:62px;  bottom:10px; opacity:1; transform:rotate(720deg); }
+        90%  { right:60px;  bottom:14px; opacity:1; transform:rotate(740deg) scale(1.1); }
+        100% { right:60px;  bottom:10px; opacity:0; transform:rotate(760deg) scale(0.5); }
+      }
     </style>
+    <!-- Yuvarlanan lastikler -->
+    <div class="lastik-anim" style="animation-delay:0s;">🛞</div>
+    <div class="lastik-anim" style="animation-delay:0.8s;">🛞</div>
+    <div class="lastik-anim" style="animation-delay:1.6s;">🛞</div>
     <!-- Konuşma balonu -->
     <div id="rotusBalon" style="position:absolute;bottom:72px;right:0;background:#fff;border:2px solid #cc0000;border-radius:12px;padding:8px 14px;font-size:12px;font-weight:700;color:#333;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.15);z-index:100;">
-      👋 Size nasıl yardımcı olabilirim?
+      👋 Yardımcı olayım!
       <div style="position:absolute;bottom:-9px;right:14px;width:14px;height:14px;background:#fff;border-right:2px solid #cc0000;border-bottom:2px solid #cc0000;transform:rotate(45deg);"></div>
     </div>
     <svg width="56" height="70" viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;display:block;">
@@ -1569,8 +1582,8 @@ function renderOteleAlinan() {
     donemList.forEach(function(k) {
       var durum, durumRenk;
       if (k.montaj) { durum = '✅ Montaj Tamam'; durumRenk = '#1a8a3a'; }
-      else if (k.sira) { durum = '📦 Depo: ' + k.sira; durumRenk = '#e67e00'; }
-      else { durum = '🏨 Otelde'; durumRenk = '#3a6abf'; }
+      else if (k.sira) { durum = 'Depo: ' + k.sira; durumRenk = '#e67e00'; }
+      else { durum = 'Otelde'; durumRenk = '#3a6abf'; }
 
       var kid = k.id;
       var adminBtns = '';
@@ -3880,6 +3893,9 @@ var NL = String.fromCharCode(10);
 
 function rotusChat() {
   rotusChatAcik = true;
+  // Balon gizle
+  var balon = document.getElementById('rotusBalon');
+  if (balon) { balon.style.opacity='0'; balon.style.transform='scale(0)'; }
   var balon = document.getElementById('rotusBalon');
   if (balon) { balon.style.opacity = '0'; balon.style.transform = 'scale(0)'; }
   document.getElementById('rotusChatModal').style.display = 'block';
