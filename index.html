@@ -1536,11 +1536,10 @@ function renderOteleAlinan() {
   const all = getData();
   // Depo sırası atanmamış, teslim edilmemiş, gelmedi işaretlenmemiş kayıtlar
   const list = all.filter(k => {
-    if (k.teslim || k.gelmedi || k.sira) return false;
+    if (k.teslim || k.gelmedi) return false;
     if (donemF && k.donem !== donemF) return false;
     return !q || k.plaka.toLowerCase().includes(q) || (k.isim||'').toLowerCase().includes(q);
   }).sort((a,b) => {
-    // En yeni kayıt en üstte - id timestamp bazlı
     return parseInt(b.id) - parseInt(a.id) || b.id.localeCompare(a.id);
   });
 
@@ -1552,12 +1551,17 @@ function renderOteleAlinan() {
     return;
   }
 
-  el.innerHTML = list.map(k => `
+  el.innerHTML = list.map(k => {
+    var durum, durumRenk;
+    if (k.montaj) { durum = '✅ Montaj Tamam'; durumRenk = '#1a8a3a'; }
+    else if (k.sira) { durum = '⏳ ' + k.sira; durumRenk = '#e67e00'; }
+    else { durum = '📦 Sıra Bekleniyor'; durumRenk = '#cc0000'; }
+    return `
     <div style="background:#fff;border:1px solid #eee;border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 1px 6px rgba(0,0,0,0.05);">
       <div style="flex:1;min-width:200px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
           <div style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:#111;">${k.plaka}</div>
-          <span style="background:#fff0f0;color:#cc0000;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;">⏳ Sıra Bekleniyor</span>
+          <span style="background:${durumRenk}18;color:${durumRenk};font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;">${durum}</span>
         </div>
         <div style="font-size:13px;font-weight:600;color:#444;margin-bottom:2px;">${k.isim}</div>
         <div style="font-size:12px;color:#888;">${k.ebat||''}${k.marka?' · '+k.marka:''}${k.tip?' · '+k.tip:''} · ${k.donem||''}</div>
@@ -1567,11 +1571,29 @@ function renderOteleAlinan() {
         ${role === 'admin' ? `
           <button class="btn btn-secondary btn-sm" onclick="editKayit('${k.id}')">✏️ Düzenle</button>
           ${k.tel ? `<button class="btn btn-wp btn-sm" onclick="openWhatsappMenu('${k.id}')">📱 WhatsApp</button>` : ''}
+          ${!k.montaj ? `<button class="btn btn-sm" onclick="openHizmetModal('${k.id}')" style="background:#e67e00;color:#fff;border:none;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">⚙️ Montaj</button>` : ''}
+          <button class="btn btn-sm" onclick="oteleAlinanTeslimEt('${k.id}')" style="background:#1a8a3a;color:#fff;border:none;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">🤝 Teslim Et</button>
           <button class="btn btn-danger btn-sm" onclick="quickDeleteKayit('${k.id}', event)">🗑️ Sil</button>
         ` : ''}
       </div>
     </div>
-  `).join('');
+  `}).join('');
+}
+
+async function oteleAlinanTeslimEt(id) {
+  onayGoster('Bu lastik teslim edildi olarak işaretlensin mi?', async function() {
+    var data = getData();
+    var k = data.find(function(d){ return d.id === id; });
+    if (!k) return;
+    k.teslim = true;
+    k.teslimTarihi = new Date().toLocaleDateString('tr-TR');
+    _cache.otel = data;
+    renderOteleAlinan();
+    renderCards();
+    updateTabCounts();
+    showToast('✅ Teslim edildi!', 'success');
+    setData(data).catch(function(){ showToast('Bağlantı hatası!', 'error'); });
+  });
 }
 
 function refreshAll() {
