@@ -61,6 +61,8 @@
     </div>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
   <script>
     var FB_URL = 'https://lasankarabase-default-rtdb.europe-west1.firebasedatabase.app';
     var params = new URLSearchParams(window.location.search);
@@ -115,10 +117,47 @@
         '<div style="font-size:11px;color:#bbb;text-align:center;margin-top:8px;">LAS ANKARA Lastik Oteli</div>';
     }
 
+    var firebaseConfig = {
+      apiKey: "AIzaSyCpOjpC39hZG20iW5DqHz3pN13UrIXr3II",
+      authDomain: "lasankarabase.firebaseapp.com",
+      projectId: "lasankarabase",
+      appId: "1:451616245870:web:a98503047d6eaf282afe7f"
+    };
+    if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+    var FB_AUTH = firebase.auth();
+
+    function fetchMusteri() {
+      var user = FB_AUTH.currentUser;
+      var tokenPromise = user ? user.getIdToken() : Promise.resolve(null);
+      tokenPromise.then(function(token) {
+        var url = FB_URL + '/otel.json' + (token ? '?auth=' + token : '');
+        fetch(url)
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            var list = Array.isArray(data) ? data : (data ? Object.values(data) : []);
+            var k = list.find(function(d) { return d && d.id === musteriId; });
+            goster(k || null);
+          })
+          .catch(function() { goster(null); });
+      });
+    }
+
     if (!musteriId) {
       goster(null);
     } else {
+      // Önce auth olmadan dene, olmadıysa auth ile
       fetch(FB_URL + '/otel.json')
+        .then(function(r) {
+          if (r.status === 401) {
+            // Auth gerekiyor - anonim giriş yap
+            return FB_AUTH.signInAnonymously().then(function(result) {
+              return result.user.getIdToken();
+            }).then(function(token) {
+              return fetch(FB_URL + '/otel.json?auth=' + token);
+            });
+          }
+          return r;
+        })
         .then(function(r) { return r.json(); })
         .then(function(data) {
           var list = Array.isArray(data) ? data : (data ? Object.values(data) : []);
