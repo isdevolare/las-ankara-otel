@@ -2002,26 +2002,36 @@ async function saveKayit() {
   addHistory(item, 'Kayıt oluşturuldu');
   if (sira) addHistory(item, `Sıra no atandı: ${sira}`);
   data.push(item);
-  await setData(data);
+  // Önce UI'yi güncelle, sonra Firebase'e yaz
   clearForm();
-  refreshAll();
-  showToast('✅ Lastik başarıyla kaydedildi!', 'success');
+  _cache.otel = data; // Cache'i hemen güncelle
   renderOteleAlinan();
-  // Aşağı kaydır
-  setTimeout(() => {
-    const listEl = document.getElementById('oteleAlinanList');
+  renderCards();
+  updateTabCounts();
+  showToast('✅ Lastik kaydedildi!', 'success');
+  setTimeout(function() {
+    var listEl = document.getElementById('oteleAlinanList');
     if (listEl) listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 300);
+  }, 200);
+  // Firebase'e arka planda yaz
+  setData(data).catch(function() { showToast('Bağlantı hatası!', 'error'); });
 }
 function clearForm() {
-  ['f_ad','f_soyad','f_plaka','f_ebat','f_marka','f_dis','f_uretim','f_not','f_tel','f_sira','f_edit_id'].forEach(id => { document.getElementById(id).value=''; });
+  ['f_ad','f_soyad','f_plaka','f_ebat','f_marka','f_dis','f_uretim','f_not','f_tel','f_sira','f_edit_id'].forEach(id => { var el = document.getElementById(id); if(el) el.value=''; });
   document.getElementById('f_adet').value = '4';
   document.getElementById('f_tip').value = 'Yazlık';
   document.getElementById('f_donem').value = '2026 Yaz';
   photoB64.form = '';
-  document.getElementById('formPhotoPreview').style.display = 'none';
-  document.getElementById('photoInput').value = '';
-  document.getElementById('saveKayitBtn').innerHTML = '💾 Kaydet';
+  photoB64.formExtra = [];
+  var prev = document.getElementById('formPhotoPreview');
+  if (prev) prev.style.display = 'none';
+  var zone = document.getElementById('photoZone');
+  if (zone) {
+    zone.style.display = 'flex';
+    zone.innerHTML = '<input type="file" accept="image/*" multiple onchange="handleMultiplePhotos(event)" id="photoInput"><div class="photo-zone-icon">📸</div><div class="photo-zone-text">Fotoğraf eklemek için tıklayın veya dosya sürükleyin</div>';
+  }
+  var btn = document.getElementById('saveKayitBtn');
+  if (btn) btn.innerHTML = '💾 Kaydet';
 }
 function editKayit(id) {
   const item = getData().find(d => d.id === id);
