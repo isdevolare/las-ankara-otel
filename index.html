@@ -943,14 +943,15 @@ select.field-input option { background: #fff; }
           .rs-ag-t { width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:16px solid #2e7d32;margin-bottom:2px; }
           .rs-ag-t2 { width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:12px solid #388e3c;margin-bottom:1px; }
           /* Araba */
-          #rsAraba { position:absolute;bottom:20px;animation:rsArabaAnim 3.5s cubic-bezier(0.4,0,0.6,1) infinite; }
+          #rsAraba { position:absolute;bottom:20px;animation:rsArabaAnim 5s ease-in-out infinite; }
           @keyframes rsArabaAnim {
-            0%   { left:-80px; }
-            50%  { left:calc(100% - 130px); }
-            60%  { left:calc(100% - 126px); }
-            70%  { left:calc(100% - 130px); }
-            85%  { left:calc(100% - 130px); opacity:1; }
-            100% { left:-80px; opacity:1; }
+            0%   { left:-100px; opacity:1; }
+            45%  { left:calc(100% - 130px); opacity:1; }
+            55%  { left:calc(100% - 126px); opacity:1; }
+            65%  { left:calc(100% - 130px); opacity:1; }
+            80%  { left:calc(100% - 130px); opacity:1; }
+            95%  { left:calc(100% + 20px); opacity:0; }
+            100% { left:calc(100% + 20px); opacity:0; }
           }
           /* Rotus */
           #rsMaskot { position:absolute;bottom:18px;right:10px;z-index:5; }
@@ -977,7 +978,13 @@ select.field-input option { background: #fff; }
         <div class="rs-ag" style="left:58%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
         <!-- Araba SVG - sola bakan -->
         <div id="rsAraba">
-          <svg width="66" height="34" viewBox="0 0 66 34" xmlns="http://www.w3.org/2000/svg">
+          <svg width="140" height="34" viewBox="0 0 140 34" xmlns="http://www.w3.org/2000/svg">
+            <!-- Banner arkada -->
+            <rect x="66" y="10" width="72" height="16" rx="3" fill="#cc0000"/>
+            <rect x="67" y="11" width="70" height="14" rx="2" fill="#fff" opacity="0.95"/>
+            <text x="102" y="22" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-size="8" font-weight="900" fill="#cc0000" letter-spacing="0.5">LAS ANKARA</text>
+            <!-- İp -->
+            <line x1="66" y1="14" x2="63" y2="16" stroke="#888" stroke-width="1.5"/>
             <rect x="3" y="13" width="60" height="15" rx="4" fill="#cc0000"/>
             <path d="M14 13 Q18 4 27 4 L46 4 Q54 4 57 13 Z" fill="#cc0000"/>
             <path d="M18 12 Q20 6 26 6 L33 6 L33 12 Z" fill="#bbdefb" opacity="0.9"/>
