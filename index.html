@@ -14,6 +14,7 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛞</text></svg>">
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1587,11 +1588,13 @@ function refreshAll() {
 const firebaseConfig = {
   apiKey: "AIzaSyCpOjpC39hZG20iW5DqHz3pN13UrIXr3II",
   authDomain: "lasankarabase.firebaseapp.com",
+  databaseURL: "https://lasankarabase-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "lasankarabase",
   appId: "1:451616245870:web:a98503047d6eaf282afe7f"
 };
 if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
 const FB_AUTH = firebase.auth();
+const FB_DB = firebase.database();
 const FB_URL = 'https://lasankarabase-default-rtdb.europe-west1.firebasedatabase.app';
 var _authToken = null; // Token bir kez alınır, cache'lenir
 
@@ -1601,37 +1604,34 @@ let _fbReady = false;
 let _listeners = [];
 
 function fbGet(path) {
-  var user = FB_AUTH.currentUser;
-  var tokenPromise = user ? user.getIdToken() : Promise.resolve(_authToken);
-  return tokenPromise.then(function(tok) {
-    if (tok) _authToken = tok;
-    var url = FB_URL + '/' + path + '.json' + (tok ? '?auth=' + tok : '');
-    return fetch(url).then(function(r) { return r.json(); }).then(function(d) { return d || (path.includes('depo') ? {} : []); });
+  return FB_DB.ref(path).once('value').then(function(snap) {
+    var d = snap.val();
+    return d || (path.includes('depo') ? {} : []);
   });
 }
 function fbSet(path, data) {
-  var user2 = FB_AUTH.currentUser;
-  var tokenPromise2 = user2 ? user2.getIdToken() : Promise.resolve(_authToken);
-  return tokenPromise2.then(function(tok2) {
-    if (tok2) _authToken = tok2;
-    var url2 = FB_URL + '/' + path + '.json' + (tok2 ? '?auth=' + tok2 : '');
-    return fetch(url2, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-  });
+  return FB_DB.ref(path).set(data);
 }
 function fbPatch(path, data) {
-  return fetch(`${FB_URL}/${path}.json`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
+  return FB_DB.ref(path).update(data);
 }
 
 // Realtime listener using SSE
 function startRealtimeSync() {
+  // Firebase SDK realtime listeners
+  var paths = ['otel','hurda','deleted','depo_sira','gecici'];
+  paths.forEach(function(path) {
+    FB_DB.ref(path).on('value', function(snap) {
+      var d = snap.val();
+      if (path === 'depo_sira') {
+        _cache[path] = d || {};
+      } else {
+        _cache[path] = d ? (Array.isArray(d) ? d : Object.values(d)).filter(Boolean) : [];
+      }
+      if (_fbReady) refreshAll();
+    });
+  });
+  return; // Eski SSE kodunu atla
   const sources = [
     { key: 'otel', path: 'otel' },
     { key: 'hurda', path: 'hurda' },
