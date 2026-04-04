@@ -1575,10 +1575,10 @@ function renderOteleAlinan() {
       var kid = k.id;
       var adminBtns = '';
       if (role === 'admin') {
-        adminBtns += '<button class="btn btn-secondary btn-sm" onclick="editKayit(\'' + kid + '\')">Duzenle</button> ';
-        if (k.tel) adminBtns += '<button class="btn btn-wp btn-sm" onclick="openWhatsappMenu(\'' + kid + '\')">WA</button> ';
-        if (!k.montaj) adminBtns += '<button onclick="openHizmetModal(\'' + kid + '\')" style="padding:5px 10px;border-radius:6px;background:#e67e00;color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;">Montaj</button> ';
-        adminBtns += '<button onclick="oteleAlinanTeslimEt(\'' + kid + '\')" style="padding:5px 10px;border-radius:6px;background:#1a8a3a;color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;">Teslim</button> ';
+        adminBtns += '<button class="btn btn-secondary btn-sm" onclick="editKayit(\'' + kid + '\')">✏️ Düzenle</button> ';
+        if (k.tel) adminBtns += '<button class="btn btn-wp btn-sm" onclick="openWhatsappMenu(\'' + kid + '\')">📱 WhatsApp</button> ';
+        if (!k.montaj) adminBtns += '<button onclick="openHizmetModal(\'' + kid + '\')" style="padding:5px 10px;border-radius:6px;background:#e67e00;color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;">⚙️ Montaj</button> ';
+        adminBtns += '<button onclick="oteleAlinanTeslimEt(\'' + kid + '\')" style="padding:5px 10px;border-radius:6px;background:#1a8a3a;color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;">🤝 Teslim Et</button> ';
         adminBtns += '<button onclick="quickDeleteKayit(\'' + kid + '\', event)" style="padding:5px 10px;border-radius:6px;background:#fff0f0;color:#cc0000;border:1.5px solid #ffcccc;font-size:11px;font-weight:700;cursor:pointer;">Sil</button>';
       }
 
@@ -1593,7 +1593,7 @@ function renderOteleAlinan() {
       html += '<div style="font-size:11px;color:#999;">' + (k.ebat||'') + (k.marka?' · '+k.marka:'') + '</div>';
       html += '</div>';
       html += '<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">';
-      html += '<button class="btn btn-secondary btn-sm" onclick="openDetail(\'' + kid + '\')">Detay</button> ';
+      html += '<button class="btn btn-secondary btn-sm" onclick="openDetail(\'' + kid + '\')">🔍 Detay</button> ';
       html += adminBtns;
       html += '</div></div></div>';
     });
@@ -1633,7 +1633,7 @@ function renderOteleAlinan() {
 }
 
 async function oteleAlinanTeslimEt(id) {
-  onayGoster('Lastig teslim edildi mi?', async function() {
+  onayGoster('Lastiği teslim ettiniz mi?', async function() {
     var data = getData();
     var k = data.find(function(d){ return d.id === id; });
     if (!k) return;
@@ -2406,7 +2406,7 @@ function renderCards() {
         </div>
 
         <div class="card-actions">
-          <button class="btn btn-secondary btn-sm" onclick="openDetail('${k.id}')">Detay</button>
+          <button class="btn btn-secondary btn-sm" onclick="openDetail('${k.id}')">🔍 Detay</button>
           ${role === 'admin' ? `
             <button class="btn btn-secondary btn-sm" onclick="editKayit('${k.id}')">Düzenle</button>
             <button onclick="openHizmetModal('${k.id}')" style="padding:5px 12px;border-radius:6px;border:1.5px solid #f5c97a;background:var(--orange-light);color:var(--orange);font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">⏳ Montaj</button>
@@ -2512,7 +2512,7 @@ function renderMontajTamam() {
         <div class="card-isim">${k.isim}</div>
         <div class="card-meta">${k.ebat}${k.marka?' · '+k.marka:''}<br>${k.adet} adet · ${k.tarih}</div>
         <div class="card-actions">
-          <button class="btn btn-secondary btn-sm" onclick="openDetail('${k.id}')">Detay</button>
+          <button class="btn btn-secondary btn-sm" onclick="openDetail('${k.id}')">🔍 Detay</button>
           ${role === 'admin' ? `
             <button onclick="toggle('${k.id}','montaj')" style="padding:5px 12px;border-radius:6px;border:1.5px solid #b8eac8;background:var(--green-light);color:var(--green);font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">✅ Montaj Tamam</button>
             <button onclick="toggle('${k.id}','teslim')" style="padding:5px 12px;border-radius:6px;border:1.5px solid #ddd;background:#f0f0f0;color:#555;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">⏳ Teslim Et</button>
@@ -2563,7 +2563,7 @@ function renderArsiv() {
           <span class="status-chip done">🤝 Teslim edildi</span>
         </div>
         <div class="card-actions">
-          <button class="btn btn-secondary btn-sm" onclick="openDetail('${k.id}')">Detay</button>
+          <button class="btn btn-secondary btn-sm" onclick="openDetail('${k.id}')">🔍 Detay</button>
           ${role === 'admin' ? `<button class="btn btn-primary btn-sm" onclick="toggle('${k.id}','teslim')">↩️ Geri Al</button><button class="btn btn-danger btn-sm" onclick="quickDeleteKayit('${k.id}', event)">Sil</button>` : ''}
         </div>
       </div>
@@ -2673,7 +2673,7 @@ function renderGelmeyen() {
           <span class="status-chip pending">⏰ ${k.gelmedi ? 'Müşteri gelmedi' : `${gecenSezonSayisi(k)} sezon gelmedi`}</span>
         </div>
         <div class="card-actions">
-          <button class="btn btn-secondary btn-sm" onclick="openDetail('${k.id}')">Detay</button>
+          <button class="btn btn-secondary btn-sm" onclick="openDetail('${k.id}')">🔍 Detay</button>
           ${role === 'admin' ? `<button class="btn btn-secondary btn-sm" onclick="editKayit('${k.id}')">✏️ Düzenle</button><button class="btn btn-primary btn-sm" onclick="unmarkAsGelmeyen('${k.id}')">↩️ Otele Geri Al</button><button class="btn btn-danger btn-sm" onclick="quickDeleteKayit('${k.id}', event)">🗑️ Sil</button>` : ''}
         </div>
       </div>
@@ -3458,7 +3458,7 @@ function renderSatilan() {
 }
 
 async function deleteHurda(id) {
-  onayGoster('Cikma lastik silinecek. Emin misiniz?', async function() {
+  onayGoster('Bu çıkma lastik kaydı silinecek. Emin misiniz?', async function() {
     await setHurda(getHurda().filter(d=>d.id!==id));
     closeHurdaModal();
     renderHurda();
