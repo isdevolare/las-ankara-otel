@@ -1601,17 +1601,25 @@ let _fbReady = false;
 let _listeners = [];
 
 function fbGet(path) {
-  const tok = _authToken;
-  const url = FB_URL + '/' + path + '.json' + (tok ? '?auth=' + tok : '');
-  return fetch(url).then(r => r.json()).then(d => d || (path.includes('depo') ? {} : []));
+  var user = FB_AUTH.currentUser;
+  var tokenPromise = user ? user.getIdToken() : Promise.resolve(_authToken);
+  return tokenPromise.then(function(tok) {
+    if (tok) _authToken = tok;
+    var url = FB_URL + '/' + path + '.json' + (tok ? '?auth=' + tok : '');
+    return fetch(url).then(function(r) { return r.json(); }).then(function(d) { return d || (path.includes('depo') ? {} : []); });
+  });
 }
 function fbSet(path, data) {
-  const tok2 = _authToken;
-  const url2 = FB_URL + '/' + path + '.json' + (tok2 ? '?auth=' + tok2 : '');
-  return fetch(url2, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
+  var user2 = FB_AUTH.currentUser;
+  var tokenPromise2 = user2 ? user2.getIdToken() : Promise.resolve(_authToken);
+  return tokenPromise2.then(function(tok2) {
+    if (tok2) _authToken = tok2;
+    var url2 = FB_URL + '/' + path + '.json' + (tok2 ? '?auth=' + tok2 : '');
+    return fetch(url2, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
   });
 }
 function fbPatch(path, data) {
