@@ -1627,7 +1627,7 @@ function renderOteleAlinan() {
 }
 
 async function oteleAlinanTeslimEt(id) {
-  onayGoster('Bu lastik teslim edildi olarak işaretlensin mi?', async function() {
+  onayGoster('Lastig teslim edildi mi?', async function() {
     var data = getData();
     var k = data.find(function(d){ return d.id === id; });
     if (!k) return;
@@ -3452,7 +3452,7 @@ function renderSatilan() {
 }
 
 async function deleteHurda(id) {
-  onayGoster('Bu cikma lastik silinecek. Emin misiniz?', async function() {
+  onayGoster('Cikma lastik silinecek. Emin misiniz?', async function() {
     await setHurda(getHurda().filter(d=>d.id!==id));
     closeHurdaModal();
     renderHurda();
@@ -4071,9 +4071,14 @@ function rotusGeriDon() {
 
 // -- ONAY MODAL --
 var _onayCallback = null;
-function onayGoster(mesaj, callback) {
+function onayGoster(mesaj, callback, btnMetin, btnRenk) {
   _onayCallback = callback;
   document.getElementById('onayMesaj').textContent = mesaj;
+  var btn = document.getElementById('onayOkBtn');
+  if (btn) {
+    btn.textContent = btnMetin || 'Evet';
+    btn.style.background = btnRenk || '#cc0000';
+  }
   var modal = document.getElementById('onayModal');
   modal.style.display = 'flex';
 }
@@ -4560,7 +4565,7 @@ if ('serviceWorker' in navigator) {
     <div style="font-size:13px;color:#666;margin-bottom:20px;line-height:1.5;" id="onayMesaj">Bu islem geri alinamaz.</div>
     <div style="display:flex;gap:10px;">
       <button onclick="onayReddet()" style="flex:1;padding:12px;border-radius:8px;border:1.5px solid #ddd;background:#f5f5f5;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;color:#555;">Vazgec</button>
-      <button id="onayOkBtn" onclick="onayOnayla()" style="flex:1;padding:12px;border-radius:8px;border:none;background:#cc0000;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;color:#fff;">Sil</button>
+      <button id="onayOkBtn" onclick="onayOnayla()" style="flex:1;padding:12px;border-radius:8px;border:none;background:#cc0000;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;color:#fff;">Evet</button>
     </div>
   </div>
 </div>
