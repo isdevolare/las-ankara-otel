@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LAS ANKARA - Lastik Bilgim</title>
   <meta name="theme-color" content="#cc0000">
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,8 +32,6 @@
     .footer-sub { font-size: 10px; color: #aaa; letter-spacing: 0.1em; }
     .footer-tel { font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 800; color: #cc0000; text-decoration: none; }
     .yukleniyor { text-align: center; padding: 60px 20px; color: #aaa; }
-    .yukleniyor-ikon { font-size: 48px; margin-bottom: 12px; animation: spin 1s linear infinite; display: inline-block; }
-    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     .hata { text-align: center; padding: 60px 20px; }
     .hata-ikon { font-size: 48px; margin-bottom: 12px; }
   </style>
@@ -47,9 +47,8 @@
     </div>
     <div class="icerik" id="icerik">
       <div class="yukleniyor">
-        <div class="yukleniyor-ikon">⏳</div>
+        <div style="font-size:40px;margin-bottom:12px;">⏳</div>
         <div style="font-weight:600;color:#555;margin-bottom:4px;">Yükleniyor...</div>
-        <div style="font-size:12px;">Lastik bilgileriniz getiriliyor</div>
       </div>
     </div>
     <div class="footer">
@@ -61,12 +60,19 @@
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
   <script>
-    var FB_URL = 'https://lasankarabase-default-rtdb.europe-west1.firebasedatabase.app';
+    var firebaseConfig = {
+      apiKey: "AIzaSyCpOjpC39hZG20iW5DqHz3pN13UrIXr3II",
+      authDomain: "lasankarabase.firebaseapp.com",
+      databaseURL: "https://lasankarabase-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "lasankarabase",
+      appId: "1:451616245870:web:a98503047d6eaf282afe7f"
+    };
+    if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+    var FB_DB = firebase.database();
+
     var params = new URLSearchParams(window.location.search);
-    var musteriId = params.get('id');
+    var musteriId = params.get('id') || params.get('musteri');
 
     function kart(baslik, deger) {
       return '<div class="kart-item"><div class="kart-baslik">' + baslik + '</div><div class="kart-deger">' + deger + '</div></div>';
@@ -75,14 +81,23 @@
     function goster(k) {
       var el = document.getElementById('icerik');
       if (!k) {
-        el.innerHTML = '<div class="hata"><div class="hata-ikon">🔍</div><div style="font-weight:700;color:#333;margin-bottom:8px;">Kayıt Bulunamadı</div><div style="font-size:13px;color:#888;">Bu link geçersiz veya süresi dolmuş olabilir.<br><br>Lütfen işyerimizi arayın.</div></div>';
+        el.innerHTML = '<div class="hata"><div class="hata-ikon">&#128269;</div><div style="font-weight:700;color:#333;margin-bottom:8px;">Kayıt Bulunamadı</div><div style="font-size:13px;color:#888;">Bu link geçersiz veya süresi dolmuş olabilir.<br><br>Lütfen işyerimizi arayın.</div></div>';
         return;
       }
       var durum, durumRenk, durumIkon;
-      if (k.teslim) { durum = 'Teslim Edildi'; durumRenk = '#1a8a3a'; durumIkon = '✅'; }
-      else if (k.montaj) { durum = 'Montaj Tamamlandı'; durumRenk = '#1a8a3a'; durumIkon = '✅'; }
-      else if (k.sira) { durum = 'Depoda Bekliyor'; durumRenk = '#e67e00'; durumIkon = '📦'; }
-      else { durum = 'Otele Alındı'; durumRenk = '#3a6abf'; durumIkon = '🛞'; }
+      if (k.teslim) { durum = 'Teslim Edildi'; durumRenk = '#1a8a3a'; durumIkon = '&#9989;'; }
+      else if (k.montaj) { durum = 'Montaj Tamamlandı'; durumRenk = '#1a8a3a'; durumIkon = '&#9989;'; }
+      else if (k.sira) { durum = 'Depoda Bekliyor'; durumRenk = '#e67e00'; durumIkon = '&#128230;'; }
+      else { durum = 'Otele Alındı'; durumRenk = '#3a6abf'; durumIkon = '&#128664;'; }
+
+      var fotograflar = (k.fotolar && k.fotolar.length) ? k.fotolar : (k.foto ? [k.foto] : []);
+      var fotoHtml = '';
+      if (fotograflar.length === 1) {
+        fotoHtml = '<div style="margin-bottom:16px;"><img src="' + fotograflar[0] + '" style="width:100%;border-radius:10px;max-height:260px;object-fit:cover;"></div>';
+      } else if (fotograflar.length > 1) {
+        fotoHtml = '<div style="margin-bottom:16px;"><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Fotoğraflar (' + fotograflar.length + ')</div><div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;">' +
+          fotograflar.map(function(f){ return '<img src="' + f + '" style="height:130px;min-width:150px;object-fit:cover;border-radius:8px;flex-shrink:0;">'; }).join('') + '</div></div>';
+      }
 
       el.innerHTML =
         '<div class="plaka">' + k.plaka + '</div>' +
@@ -101,70 +116,22 @@
           (k.sira ? kart('Depo Sırası', k.sira) : '') +
           (k.dis ? kart('Diş Derinliği', k.dis + ' mm') : '') +
         '</div>' +
-        (function(){
-          var fotograflar = (k.fotolar && k.fotolar.length) ? k.fotolar : (k.foto ? [k.foto] : []);
-          if (!fotograflar.length) return '';
-          if (fotograflar.length === 1) {
-            return '<div style="margin-bottom:16px;"><img src="' + fotograflar[0] + '" style="width:100%;border-radius:10px;max-height:260px;object-fit:cover;"></div>';
-          }
-          return '<div style="margin-bottom:16px;">' +
-            '<div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Fotoğraflar (' + fotograflar.length + ')</div>' +
-            '<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch;">' +
-            fotograflar.map(function(f){ return '<img src="' + f + '" style="height:130px;min-width:150px;object-fit:cover;border-radius:8px;flex-shrink:0;">'; }).join('') +
-            '</div></div>';
-        })() +
+        fotoHtml +
         (k.not ? '<div class="not-box"><strong>Not:</strong> ' + k.not + '</div>' : '') +
-        '<div style="font-size:11px;color:#bbb;text-align:center;margin-top:8px;">LAS ANKARA Lastik Oteli</div>';
-    }
-
-    var firebaseConfig = {
-      apiKey: "AIzaSyCpOjpC39hZG20iW5DqHz3pN13UrIXr3II",
-      authDomain: "lasankarabase.firebaseapp.com",
-      projectId: "lasankarabase",
-      appId: "1:451616245870:web:a98503047d6eaf282afe7f"
-    };
-    if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-    var FB_AUTH = firebase.auth();
-
-    function fetchMusteri() {
-      var user = FB_AUTH.currentUser;
-      var tokenPromise = user ? user.getIdToken() : Promise.resolve(null);
-      tokenPromise.then(function(token) {
-        var url = FB_URL + '/otel.json' + (token ? '?auth=' + token : '');
-        fetch(url)
-          .then(function(r) { return r.json(); })
-          .then(function(data) {
-            var list = Array.isArray(data) ? data : (data ? Object.values(data) : []);
-            var k = list.find(function(d) { return d && d.id === musteriId; });
-            goster(k || null);
-          })
-          .catch(function() { goster(null); });
-      });
+        '<div style="font-size:11px;color:#bbb;text-align:center;">LAS ANKARA Lastik Oteli</div>';
     }
 
     if (!musteriId) {
       goster(null);
     } else {
-      // Önce auth olmadan dene, olmadıysa auth ile
-      fetch(FB_URL + '/otel.json')
-        .then(function(r) {
-          if (r.status === 401) {
-            // Auth gerekiyor - anonim giriş yap
-            return FB_AUTH.signInAnonymously().then(function(result) {
-              return result.user.getIdToken();
-            }).then(function(token) {
-              return fetch(FB_URL + '/otel.json?auth=' + token);
-            });
-          }
-          return r;
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          var list = Array.isArray(data) ? data : (data ? Object.values(data) : []);
-          var k = list.find(function(d) { return d && d.id === musteriId; });
-          goster(k || null);
-        })
-        .catch(function() { goster(null); });
+      FB_DB.ref('otel').once('value').then(function(snap) {
+        var data = snap.val();
+        var list = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+        var k = list.find(function(d) { return d && d.id === musteriId; });
+        goster(k || null);
+      }).catch(function() {
+        goster(null);
+      });
     }
   </script>
 </body>
