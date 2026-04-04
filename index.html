@@ -3897,27 +3897,35 @@ function logout() {
 var rotusChatAcik = false;
 var NL = String.fromCharCode(10);
 
-// Araba animasyon timer - 4s döngüde %70 = 2.8s sonra balon çıkar
+// Araba gelince balon çıkar - 5s döngü, %60 = 3s sonra
 (function() {
   function arabaLoop() {
+    // 3. saniyede araba rotusa yaklaşıyor - balon çıkar
     setTimeout(function() {
-      var balon = document.getElementById('rotusBalon');
+      var balon = document.getElementById('rotusYardimBalon');
+      var sapka = document.getElementById('rotusSapkaSahne');
       if (balon && !rotusChatAcik) {
         balon.classList.add('gorulur');
+        if (sapka) sapka.classList.add('kalkan');
         setTimeout(function() {
-          if (!rotusChatAcik) balon.classList.remove('gorulur');
-        }, 2000);
+          if (!rotusChatAcik) {
+            balon.classList.remove('gorulur');
+            if (sapka) sapka.classList.remove('kalkan');
+          }
+        }, 2500);
       }
-      arabaLoop();
-    }, 4000);
+      setTimeout(arabaLoop, 5000);
+    }, 3000);
   }
-  setTimeout(arabaLoop, 2800);
+  setTimeout(arabaLoop, 3000);
 })();
 
 function rotusChat() {
   rotusChatAcik = true;
-  var balon = document.getElementById('rotusBalon');
+  var balon = document.getElementById('rotusYardimBalon');
   if (balon) balon.classList.remove('gorulur');
+  var sapka = document.getElementById('rotusSapkaSahne');
+  if (sapka) { sapka.classList.add('kalkan'); setTimeout(function(){ sapka.classList.remove('kalkan'); }, 1000); }
   var balon = document.getElementById('rotusBalon');
   if (balon) { balon.style.opacity = '0'; balon.style.transform = 'scale(0)'; }
   document.getElementById('rotusChatModal').style.display = 'block';
@@ -3930,7 +3938,7 @@ function rotusChat() {
 function rotusKapat() {
   rotusChatAcik = false;
   document.getElementById('rotusChatModal').style.display = 'none';
-  var balon = document.getElementById('rotusBalon');
+  var balon = document.getElementById('rotusYardimBalon');
   if (balon) balon.classList.remove('gorulur');
 }
 
