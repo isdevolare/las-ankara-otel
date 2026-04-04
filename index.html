@@ -1551,7 +1551,53 @@ function renderOteleAlinan() {
     return;
   }
 
-  el.innerHTML = list.map(k => {
+  // Dönem gruplandırma
+  var donemler = [];
+  var donemMap = {};
+  list.forEach(function(k) {
+    var d = k.donem || 'Belirsiz';
+    if (!donemMap[d]) { donemMap[d] = []; donemler.push(d); }
+    donemMap[d].push(k);
+  });
+
+  var html = '';
+  donemler.forEach(function(donem) {
+    var donemList = donemMap[donem];
+    html += '<div style="margin-bottom:20px;">';
+    html += '<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:0.1em;padding:8px 0 6px;border-bottom:2px solid #f0f0f0;margin-bottom:10px;">' + donem + ' <span style="color:#cc0000;">(' + donemList.length + ')</span></div>';
+    html += donemList.map(function(k) {
+    var durum, durumRenk;
+    if (k.montaj) { durum = '✅ Montaj Tamam'; durumRenk = '#1a8a3a'; }
+    else if (k.sira) { durum = '⏳ ' + k.sira; durumRenk = '#e67e00'; }
+    else { durum = '📦 Sıra Bekleniyor'; durumRenk = '#cc0000'; }
+    return `
+    <div style="background:#fff;border:1px solid #eee;border-radius:10px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 1px 6px rgba(0,0,0,0.05);">
+      <div style="flex:1;min-width:200px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:#111;">\${k.plaka}</div>
+          <span style="background:\${durumRenk}18;color:\${durumRenk};font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;">\${durum}</span>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:#444;margin-bottom:2px;">\${k.isim}</div>
+        <div style="font-size:12px;color:#888;">\${k.ebat||''}\${k.marka?' · '+k.marka:''}\${k.tip?' · '+k.tip:''}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" onclick="openDetail('\${k.id}')">🔍 Detay</button>
+        \${role === 'admin' ? \`
+          <button class="btn btn-secondary btn-sm" onclick="editKayit('\${k.id}')">✏️ Düzenle</button>
+          \${k.tel ? \`<button class="btn btn-wp btn-sm" onclick="openWhatsappMenu('\${k.id}')">📱 WhatsApp</button>\` : ''}
+          \${!k.montaj ? \`<button class="btn btn-sm" onclick="openHizmetModal('\${k.id}')" style="background:#e67e00;color:#fff;border:none;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">⚙️ Montaj</button>\` : ''}
+          <button class="btn btn-sm" onclick="oteleAlinanTeslimEt('\${k.id}')" style="background:#1a8a3a;color:#fff;border:none;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">🤝 Teslim Et</button>
+          <button class="btn btn-danger btn-sm" onclick="quickDeleteKayit('\${k.id}', event)">🗑️ Sil</button>
+        \` : ''}
+      </div>
+    </div>
+  `}).join('');
+    html += '</div>';
+  });
+  el.innerHTML = html;
+  return;
+  // ESKI KOD ASAGIDA - bu satira gelmez
+  el.innerHTML = list.map(function(k) {
     var durum, durumRenk;
     if (k.montaj) { durum = '✅ Montaj Tamam'; durumRenk = '#1a8a3a'; }
     else if (k.sira) { durum = '⏳ ' + k.sira; durumRenk = '#e67e00'; }
@@ -1681,21 +1727,55 @@ function startRealtimeSync() {
 }
 
 // Load all data once at startup
-async function loadAllFromFirebase() {
-  try {
-    const [otel, hurda, deleted, depo_sira, gecici] = await Promise.all([
-      fbGet('otel'), fbGet('hurda'), fbGet('deleted'), fbGet('depo_sira'), fbGet('gecici')
-    ]);
-    _cache.otel = (Array.isArray(otel) ? otel : Object.values(otel || {})).filter(Boolean).map(k => ({ ...k, tip: k.tip || inferTipFromDonem(k.donem) }));
-    _cache.hurda = (Array.isArray(hurda) ? hurda : Object.values(hurda || {})).filter(Boolean);
-    _cache.deleted = (Array.isArray(deleted) ? deleted : Object.values(deleted || {})).filter(Boolean);
-    _cache.depo_sira = depo_sira || {};
-    _cache.gecici = (Array.isArray(gecici) ? gecici : Object.values(gecici || {})).filter(Boolean);
-  } catch(err) {
-    showToast('Baglanti hatasi, yenileyin', 'error');
-  }
-  _fbReady = true;
-  startRealtimeSync();
+function loadAllFromFirebase() {
+  return new Promise(function(resolve) {
+    var loaded = { otel: false, hurda: false, deleted: false, depo_sira: false, gecici: false };
+    function checkDone() {
+      if (Object.values(loaded).every(Boolean)) {
+        _fbReady = true;
+        resolve();
+      }
+    }
+    
+    FB_DB.ref('otel').once('value').then(function(snap) {
+      var d = snap.val();
+      var list = d ? (Array.isArray(d) ? d : Object.values(d)).filter(Boolean) : [];
+      _cache.otel = list.map(function(k){ return Object.assign({}, k, {tip: k.tip || inferTipFromDonem(k.donem)}); });
+      try { localStorage.setItem('lc_otel', JSON.stringify(_cache.otel)); } catch(e) {}
+      loaded.otel = true;
+      renderOteleAlinan(); renderCards(); updateTabCounts();
+      checkDone();
+    });
+    
+    FB_DB.ref('hurda').once('value').then(function(snap) {
+      var d = snap.val();
+      _cache.hurda = d ? (Array.isArray(d) ? d : Object.values(d)).filter(Boolean) : [];
+      try { localStorage.setItem('lc_hurda', JSON.stringify(_cache.hurda)); } catch(e) {}
+      loaded.hurda = true;
+      checkDone();
+    });
+    
+    FB_DB.ref('deleted').once('value').then(function(snap) {
+      var d = snap.val();
+      _cache.deleted = d ? (Array.isArray(d) ? d : Object.values(d)).filter(Boolean) : [];
+      try { localStorage.setItem('lc_deleted', JSON.stringify(_cache.deleted)); } catch(e) {}
+      loaded.deleted = true;
+      checkDone();
+    });
+    
+    FB_DB.ref('depo_sira').once('value').then(function(snap) {
+      _cache.depo_sira = snap.val() || {};
+      loaded.depo_sira = true;
+      checkDone();
+    });
+    
+    FB_DB.ref('gecici').once('value').then(function(snap) {
+      var d = snap.val();
+      _cache.gecici = d ? (Array.isArray(d) ? d : Object.values(d)).filter(Boolean) : [];
+      loaded.gecici = true;
+      checkDone();
+    });
+  });
 }
 
 function showLoadingOverlay(show) {
