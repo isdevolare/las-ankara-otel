@@ -1931,12 +1931,16 @@ function showPage(name, el) {
 function init() {
   populateDonem();
   renderCards();
+  renderMontajTamam();
+  renderOteleAlinan();
   renderHurda();
   renderDepoListesi();
   renderGelmeyen();
   renderArsiv();
   renderDeleted();
-  document.getElementById('aktifDonemLabel').textContent = AKTIF_DONEM;
+  updateTabCounts();
+  var lbl = document.getElementById('aktifDonemLabel');
+  if (lbl) lbl.textContent = AKTIF_DONEM;
   applyDepoForm();
   showPage('otel', document.getElementById('ntab-otel'));
 }
@@ -3705,8 +3709,8 @@ function showToast(msg, type='') {
       document.getElementById('appScreen').classList.add('active');
       applyRole();
       
-      // Cache varsa hemen göster
-      if (_cache.otel && _cache.otel.length > 0) {
+      // Cache varsa HEMEN göster - Firebase bekleme
+      if (_cache.otel !== undefined) {
         init();
       }
 
@@ -3715,7 +3719,6 @@ function showToast(msg, type='') {
         _authToken = token;
         return loadAllFromFirebase();
       }).then(function() {
-        // Verileri yenile ama sayfayı sıfırlama
         renderCards();
         renderMontajTamam();
         renderOteleAlinan();
@@ -3725,7 +3728,7 @@ function showToast(msg, type='') {
         renderArsiv();
         renderDeleted();
         updateTabCounts();
-        if (!_cache.otel || _cache.otel.length === 0) init();
+        if (_cache.otel && _cache.otel.length > 0 && !_fbReady) init();
       });
     }
   });
