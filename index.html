@@ -2064,6 +2064,12 @@ function editKayit(id) {
   document.getElementById('saveKayitBtn').innerHTML = '💾 Güncelle';
   showPage('form', document.getElementById('ntab-form'));
   closeModal();
+  // Forma scroll yap
+  setTimeout(function() {
+    var formCard = document.getElementById('formKarti');
+    if (formCard) formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 200);
 }
 
 // ── CARDS ──
