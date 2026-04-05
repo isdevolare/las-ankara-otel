@@ -2331,15 +2331,15 @@ function populateDonem() {
 }
 
 function depoAra() {
-  const q = document.getElementById('depoAramaInput').value.trim().toLowerCase();
+  const q = document.getElementById('depoAramaInput').value.trim().toLocaleLowerCase('tr-TR');
   const sonucDiv = document.getElementById('depoAramaSonuc');
   if (!q || q.length < 1) { sonucDiv.style.display = 'none'; return; }
 
   const all = getData();
   const found = all.filter(k =>
-    (k.sira||'').toLowerCase().includes(q) ||
-    k.plaka.toLowerCase().includes(q) ||
-    k.isim.toLowerCase().includes(q)
+    (k.sira||'').toLocaleLowerCase('tr-TR').includes(q) ||
+    (k.plaka||'').toLocaleLowerCase('tr-TR').includes(q) ||
+    (k.isim||'').toLocaleLowerCase('tr-TR').includes(q)
   );
 
   sonucDiv.style.display = 'block';
@@ -2385,7 +2385,9 @@ function renderCards() {
   let filtered = all.filter(k => {
     if (k.gelmedi || k.teslim || k.montaj) return false;
     if (!k.sira) return false;
-    const ms = k.plaka.toLowerCase().includes(search) || k.isim.toLowerCase().includes(search) || (k.sira||'').toLowerCase().includes(search);
+    // Sadece depo sayımından gelen (isim/tel boş) kayıtları ana sayfadan gizle
+    if ((k.id||'').startsWith('depo_') && !k.tel && !k.ad) return false;
+    const ms = (k.plaka||'').toLocaleLowerCase('tr-TR').includes(search) || (k.isim||'').toLocaleLowerCase('tr-TR').includes(search) || (k.sira||'').toLocaleLowerCase('tr-TR').includes(search);
     const md = !donem || k.donem === donem;
     return ms && md;
   }).sort((a,b) => {
@@ -3719,8 +3721,7 @@ function sahibindenGonder(id) {
 🏷️ Marka: ${h.marka || '-'}
 📅 Dönem: ${h.donem || '-'}
 🔢 Adet: ${h.adet || '-'} adet
-
-` : ''}${h.uretim ? `📆 Üretim Yılı: ${h.uretim}
+${h.uretim ? `📆 Üretim Yılı: ${h.uretim}
 ` : ''}${h.fiyat ? `💰 Fiyat: ${h.fiyat} ₺
 ` : ''}
 ${h.not ? `📝 Notlar: ${h.not}
