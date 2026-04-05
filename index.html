@@ -1653,7 +1653,7 @@ function renderOteleAlinan() {
   const list = all.filter(k => {
     if (k.teslim || k.gelmedi) return false;
     // Depo sayımından gelen boş kayıtları gizle
-    if ((k.id||'').startsWith('depo_') && !k.tel && !k.ad && !k.isim) return false;
+    if (k.depoKayit) return false;
     if (donemF && k.donem !== donemF) return false;
     return !q || (k.plaka||'').toLocaleLowerCase('tr-TR').includes(q) || (k.isim||'').toLocaleLowerCase('tr-TR').includes(q);
   }).sort((a,b) => {
@@ -2392,8 +2392,8 @@ function renderCards() {
   let filtered = all.filter(k => {
     if (k.gelmedi || k.teslim || k.montaj) return false;
     if (!k.sira) return false;
-    // Sadece depo sayımından gelen (isim/tel/ad hepsi boş) kayıtları gizle
-    if ((k.id||'').startsWith('depo_') && !k.tel && !k.ad && !k.isim) return false;
+    // Sadece depo sayımından gelen (isim/tel boş) kayıtları ana sayfadan gizle
+    if (k.depoKayit) return false;
     const ms = (k.plaka||'').toLocaleLowerCase('tr-TR').includes(search) || (k.isim||'').toLocaleLowerCase('tr-TR').includes(search) || (k.sira||'').includes(search);
     const md = !donem || k.donem === donem;
     return ms && md;
@@ -3299,11 +3299,11 @@ async function depoEkle() {
 
   const siralar = getDepoSiralar();
 
-  // Aynı sıra başka GERÇEK kayıtla çakışıyorsa engelle (depo_sira meta verisini sayma)
-  const mevcutKayit = kayitlar.find(k => k.sira === sira && k.plaka.replace(/\s/g,'').toUpperCase() !== temizPlaka);
-  if (mevcutKayit) {
+  // Aynı sıra başka plakayla kayıtlıysa engelle
+  const mevcutPlaka = Object.keys(siralar).find(p => siralar[p] === sira);
+  if (mevcutPlaka && mevcutPlaka !== temizPlaka) {
     msg.style.color = '#cc0000';
-    msg.textContent = `⚠️ ${sira} sırası zaten ${mevcutKayit.plaka} plakasına atanmış.`;
+    msg.textContent = `⚠️ ${sira} sırası zaten ${mevcutPlaka} plakasına atanmış.`;
     return;
   }
 
@@ -3325,8 +3325,9 @@ async function depoEkle() {
       ebat: '', marka: '', dis: '', uretim: '',
       adet: '4', tip: 'Yazlık',
       donem: donemSecilen,
-      tel: '', not: 'Depo sayımından eklendi',
+      tel: '', not: '',
       sira: sira,
+      depoKayit: true,
       foto: '',
       tarih: new Date().toLocaleDateString('tr-TR'),
       montaj: false, teslim: false, gelmedi: false,
