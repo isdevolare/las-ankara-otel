@@ -930,6 +930,8 @@ select.field-input option { background: #fff; }
     <!-- ROTUS SAHNE -->
     <div style="margin-bottom:12px;">
       <div class="stats-bar" id="statsBar" style="margin-bottom:10px;"></div>
+      <div style="position:relative;width:100%;">
+      <div id="rsBalon" style="position:absolute;bottom:98px;right:10px;background:#fff;border:2px solid #cc0000;border-radius:10px;padding:5px 10px;font-size:11px;font-weight:700;color:#333;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,0.15);opacity:0;transform:scale(0);transform-origin:bottom right;transition:all 0.35s cubic-bezier(.34,1.56,.64,1);pointer-events:none;z-index:20;">👋 Yardımcı olayım!<span style="position:absolute;bottom:-7px;right:8px;width:10px;height:10px;background:#fff;border-right:2px solid #cc0000;border-bottom:2px solid #cc0000;transform:rotate(45deg);display:block;"></span></div>
       <div id="rotusSahne" style="position:relative;width:100%;height:88px;border-radius:12px;overflow:hidden;cursor:default;background:linear-gradient(180deg,#90caf9 0%,#e8f5e9 55%,#81c784 100%);">
         <style>
           /* Bulutlar */
@@ -949,9 +951,7 @@ select.field-input option { background: #fff; }
           #rsSapka { transition:transform 0.4s cubic-bezier(.34,1.56,.64,1);transform-origin:50% 100%; }
           #rsSapka.kalkan { transform:rotate(-35deg) translate(6px,-8px); }
           /* Balon */
-          #rsBalon { position:absolute;bottom:90px;right:6px;background:#fff;border:2px solid #cc0000;border-radius:10px;padding:5px 10px;font-size:11px;font-weight:700;color:#333;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,0.15);opacity:0;transform:scale(0);transform-origin:bottom right;transition:all 0.35s cubic-bezier(.34,1.56,.64,1);pointer-events:none;z-index:10; }
-          #rsBalon::after { content:'';position:absolute;bottom:-7px;right:8px;width:10px;height:10px;background:#fff;border-right:2px solid #cc0000;border-bottom:2px solid #cc0000;transform:rotate(45deg); }
-          #rsBalon.ac { opacity:1;transform:scale(1); }
+          #rsBalon.ac { opacity:1 !important;transform:scale(1) !important; }
         </style>
         <!-- Bulutlar -->
         <div class="rc" style="top:5px;left:8%;width:36px;height:12px;"></div>
@@ -1016,7 +1016,7 @@ select.field-input option { background: #fff; }
           </svg>
         </div>
         <!-- Yardım balonu -->
-        <div id="rsBalon">👋 Yardımcı olayım!</div>
+      </div>
       </div>
     </div>
     <script>
