@@ -943,13 +943,14 @@ select.field-input option { background: #fff; }
           .rs-ag-t { width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:16px solid #2e7d32;margin-bottom:2px; }
           .rs-ag-t2 { width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:12px solid #388e3c;margin-bottom:1px; }
           /* Araba */
-          #rsAraba { position:absolute;bottom:20px;animation:rsArabaAnim 6s linear infinite; }
+          #rsAraba { position:absolute;bottom:20px;left:0;animation:rsArabaAnim 7s linear infinite; }
           @keyframes rsArabaAnim {
-            0%   { left:-150px; opacity:0; }
-            5%   { opacity:1; }
-            75%  { left:calc(100% - 50px); opacity:1; }
-            85%  { left:calc(100% - 50px); opacity:0; }
-            100% { left:calc(100% - 50px); opacity:0; }
+            0%   { transform:translateX(-160px); opacity:1; }
+            5%   { transform:translateX(-160px); opacity:1; }
+            70%  { transform:translateX(calc(100% - 160px)); opacity:1; }
+            85%  { transform:translateX(calc(100% - 160px)); opacity:1; }
+            99%  { transform:translateX(calc(100% - 160px)); opacity:0; }
+            100% { transform:translateX(-160px); opacity:0; }
           }
           /* Rotus */
           #rsMaskot { position:absolute;bottom:18px;right:10px;z-index:5; }
