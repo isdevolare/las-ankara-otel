@@ -1641,14 +1641,15 @@ function findDuplicateSira(sira, exceptId='') {
   return getData().find(k => (k.sira || '').toUpperCase() === sira.toUpperCase() && k.id !== exceptId) || null;
 }
 function renderOteleAlinan() {
-  const q = (document.getElementById('oteleAlinanSearch')?.value || '').toLowerCase();
+  const q = (document.getElementById('oteleAlinanSearch')?.value || '').toLocaleLowerCase('tr-TR');
   const donemF = document.getElementById('oteleAlinanDonem')?.value || '';
   const all = getData();
-  // Depo sırası atanmamış, teslim edilmemiş, gelmedi işaretlenmemiş kayıtlar
   const list = all.filter(k => {
     if (k.teslim || k.gelmedi) return false;
+    // Depo sayımından gelen boş kayıtları gizle
+    if ((k.id||'').startsWith('depo_') && !k.tel && !k.ad) return false;
     if (donemF && k.donem !== donemF) return false;
-    return !q || k.plaka.toLowerCase().includes(q) || (k.isim||'').toLowerCase().includes(q);
+    return !q || (k.plaka||'').toLocaleLowerCase('tr-TR').includes(q) || (k.isim||'').toLocaleLowerCase('tr-TR').includes(q);
   }).sort((a,b) => {
     var sa = parseInt((a.sira||'').replace(/\D/g,'')) || 9999;
     var sb = parseInt((b.sira||'').replace(/\D/g,'')) || 9999;
