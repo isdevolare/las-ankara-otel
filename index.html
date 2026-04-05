@@ -1124,10 +1124,6 @@ select.field-input option { background: #fff; }
           <input class="field-input" id="f_marka" placeholder="Bridgestone, Pirelli...">
         </div>
         <div class="field">
-          <div class="field-label">Diş Derinliği (mm)</div>
-          <input class="field-input" id="f_dis" placeholder="örn: 6" type="number" min="0" max="12">
-        </div>
-        <div class="field">
           <div class="field-label">Üretim Yılı</div>
           <input class="field-input" id="f_uretim" placeholder="örn: 2022" type="number" min="2000" max="2030">
         </div>
@@ -1651,14 +1647,15 @@ function findDuplicateSira(sira, exceptId='') {
   return getData().find(k => (k.sira || '').toUpperCase() === sira.toUpperCase() && k.id !== exceptId) || null;
 }
 function renderOteleAlinan() {
-  const q = (document.getElementById('oteleAlinanSearch')?.value || '').toLowerCase();
+  const q = (document.getElementById('oteleAlinanSearch')?.value || '').toLocaleLowerCase('tr-TR');
   const donemF = document.getElementById('oteleAlinanDonem')?.value || '';
   const all = getData();
-  // Depo sırası atanmamış, teslim edilmemiş, gelmedi işaretlenmemiş kayıtlar
   const list = all.filter(k => {
     if (k.teslim || k.gelmedi) return false;
+    // Depo sayımından gelen boş kayıtları gizle
+    if ((k.id||'').startsWith('depo_') && !k.tel && !k.ad) return false;
     if (donemF && k.donem !== donemF) return false;
-    return !q || k.plaka.toLowerCase().includes(q) || (k.isim||'').toLowerCase().includes(q);
+    return !q || (k.plaka||'').toLocaleLowerCase('tr-TR').includes(q) || (k.isim||'').toLocaleLowerCase('tr-TR').includes(q);
   }).sort((a,b) => {
     var sa = parseInt((a.sira||'').replace(/\D/g,'')) || 9999;
     var sb = parseInt((b.sira||'').replace(/\D/g,'')) || 9999;
@@ -2215,7 +2212,7 @@ async function saveKayit() {
     Object.assign(item, {
       ad, soyad, isim, plaka, ebat,
       marka: document.getElementById('f_marka').value.trim(),
-      dis: document.getElementById('f_dis').value,
+      dis: '',
       adet: document.getElementById('f_adet').value,
       tip: document.getElementById('f_tip').value,
       donem: document.getElementById('f_donem').value,
@@ -2239,7 +2236,7 @@ async function saveKayit() {
     id: Date.now().toString(),
     ad, soyad, isim, plaka, ebat,
     marka: document.getElementById('f_marka').value.trim(),
-    dis: document.getElementById('f_dis').value,
+    dis: '',
     uretim: document.getElementById('f_uretim').value.trim(),
     adet: document.getElementById('f_adet').value,
     tip: document.getElementById('f_tip').value,
@@ -2274,7 +2271,7 @@ async function saveKayit() {
   setData(data).catch(function() { showToast('Bağlantı hatası!', 'error'); });
 }
 function clearForm() {
-  ['f_ad','f_soyad','f_plaka','f_ebat','f_marka','f_dis','f_uretim','f_not','f_tel','f_sira','f_edit_id'].forEach(id => { var el = document.getElementById(id); if(el) el.value=''; });
+  ['f_ad','f_soyad','f_plaka','f_ebat','f_marka','f_uretim','f_not','f_tel','f_sira','f_edit_id'].forEach(id => { var el = document.getElementById(id); if(el) el.value=''; });
   document.getElementById('f_adet').value = '4';
   document.getElementById('f_tip').value = 'Yazlık';
   document.getElementById('f_donem').value = '2026 Yaz';
@@ -2299,7 +2296,7 @@ function editKayit(id) {
   document.getElementById('f_plaka').value = item.plaka || '';
   document.getElementById('f_ebat').value = item.ebat || '';
   document.getElementById('f_marka').value = item.marka || '';
-  document.getElementById('f_dis').value = item.dis || '';
+  
   document.getElementById('f_adet').value = item.adet || '4';
   document.getElementById('f_tip').value = item.tip || inferTipFromDonem(item.donem);
   document.getElementById('f_donem').value = item.donem || '2026 Yaz';
@@ -2395,7 +2392,9 @@ function renderCards() {
   let filtered = all.filter(k => {
     if (k.gelmedi || k.teslim || k.montaj) return false;
     if (!k.sira) return false;
-    const ms = k.plaka.toLowerCase().includes(search) || k.isim.toLowerCase().includes(search) || (k.sira||'').toLowerCase().includes(search);
+    // Sadece depo sayımından gelen (isim/tel boş) kayıtları ana sayfadan gizle
+    if ((k.id||'').startsWith('depo_') && !k.tel && !k.ad) return false;
+    const ms = (k.plaka||'').toLocaleLowerCase('tr-TR').includes(search) || (k.isim||'').toLocaleLowerCase('tr-TR').includes(search) || (k.sira||'').includes(search);
     const md = !donem || k.donem === donem;
     return ms && md;
   }).sort((a,b) => {
@@ -2534,7 +2533,7 @@ function renderCards() {
         </div>
         <div class="card-isim">${k.isim}</div>
         <div class="card-meta">
-          ${k.ebat}${k.tip ? ' · ' + k.tip : ''}${k.marka ? ' · ' + k.marka : ''}${k.dis ? ' · ' + k.dis + 'mm' : ''}${k.uretim ? ' · ' + k.uretim + ' üretim' : ''}<br>
+          ${k.ebat}${k.tip ? ' · ' + k.tip : ''}${k.marka ? ' · ' + k.marka : ''}${k.uretim ? ' · ' + k.uretim + ' üretim' : ''}<br>
           ${k.adet} adet · ${k.tarih}
         </div>
 
@@ -2693,7 +2692,7 @@ function renderArsiv() {
         </div>
         <div class="card-isim">${k.isim}</div>
         <div class="card-meta">
-          ${k.ebat}${k.tip ? ' · ' + k.tip : ''}${k.marka ? ' · ' + k.marka : ''}${k.dis ? ' · ' + k.dis + 'mm' : ''}${k.uretim ? ' · ' + k.uretim + ' üretim' : ''}<br>
+          ${k.ebat}${k.tip ? ' · ' + k.tip : ''}${k.marka ? ' · ' + k.marka : ''}${k.uretim ? ' · ' + k.uretim + ' üretim' : ''}<br>
           ${k.adet} adet · ${k.tarih}
         </div>
         <div class="card-statuses">
@@ -2738,7 +2737,7 @@ function renderDeleted() {
           ${k.sira ? `<span style="background:#111;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:0.08em;">${k.sira}</span>` : ''}
         </div>
         <div class="card-isim">${k.isim || '-'}</div>
-        <div class="card-meta">${k.ebat || '-'}${k.tip ? ' · ' + k.tip : ''}${k.marka ? ' · ' + k.marka : ''}${k.dis ? ' · ' + k.dis + 'mm' : ''}<br>Silinme: ${k.deletedAt || '-'}</div>
+        <div class="card-meta">${k.ebat || '-'}${k.tip ? ' · ' + k.tip : ''}${k.marka ? ' · ' + k.marka : ''}<br>Silinme: ${k.deletedAt || '-'}</div>
         <div class="card-actions">
           ${role === 'admin' ? `<button class="btn btn-success btn-sm" onclick="restoreDeleted('${k.id}')">↩️ Geri Yükle</button><button class="btn btn-danger btn-sm" onclick="permanentDeleteDeleted('${k.id}')">❌ Kalıcı Sil</button>` : '<span style="font-size:12px;color:#aaa;">Sadece görüntüleme</span>'}
         </div>
@@ -2835,7 +2834,7 @@ function openDetail(id) {
     <tr><td>Ebat</td><td>${k.ebat}</td></tr>
     <tr><td>Lastik Tipi</td><td>${k.tip || inferTipFromDonem(k.donem)}</td></tr>
     <tr><td>Marka</td><td>${k.marka||'—'}</td></tr>
-    <tr><td>Diş Derinliği</td><td>${k.dis ? k.dis + ' mm' : '—'}</td></tr>
+    
     <tr><td>Üretim Yılı</td><td>${k.uretim || '—'}</td></tr>
     <tr><td>Adet</td><td>${k.adet}</td></tr>
     <tr><td>Dönem</td><td>${k.donem}</td></tr>
