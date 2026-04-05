@@ -100,7 +100,7 @@
 
       el.innerHTML =
         '<div class="plaka">' + k.plaka + '</div>' +
-        '<div class="isim">' + k.isim + '</div>' +
+        '<div class="isim">' + (k.isim || k.plaka) + '</div>' +
         '<div class="durum-box" style="background:' + durumRenk + '18;border:1.5px solid ' + durumRenk + '44;">' +
           '<div class="durum-ikon">' + durumIkon + '</div>' +
           '<div class="durum-text" style="color:' + durumRenk + ';">' + durum + '</div>' +
@@ -113,7 +113,6 @@
           kart('Dönem', k.donem || '-') +
           kart('Giriş Tarihi', k.tarih || '-') +
           (k.sira ? kart('Depo Sırası', k.sira) : '') +
-          (k.dis ? kart('Diş Derinliği', k.dis + ' mm') : '') +
         '</div>' +
         fotoHtml +
         (k.not ? '<div class="not-box"><strong>Not:</strong> ' + k.not + '</div>' : '') +
@@ -123,19 +122,20 @@
     if (!musteriId) {
       goster(null);
     } else {
-      // Önce doküman ID'sine göre direkt çek
+      // 1. Önce doküman ID'siyle direkt çek
       FS.collection('otel').doc(musteriId).get().then(function(doc) {
         if (doc.exists) {
           goster(doc.data());
+          return;
+        }
+        // 2. id field'ına göre ara (eski kayıtlar için)
+        return FS.collection('otel').where('id', '==', musteriId).limit(1).get();
+      }).then(function(snap) {
+        if (!snap || snap.empty === undefined) return; // zaten gosterildi
+        if (!snap.empty) {
+          goster(snap.docs[0].data());
         } else {
-          // Bulunamazsa id field'ına göre ara
-          return FS.collection('otel').where('id', '==', musteriId).limit(1).get().then(function(snap) {
-            if (!snap.empty) {
-              goster(snap.docs[0].data());
-            } else {
-              goster(null);
-            }
-          });
+          goster(null);
         }
       }).catch(function() {
         goster(null);
