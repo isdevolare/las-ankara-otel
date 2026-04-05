@@ -123,10 +123,20 @@
     if (!musteriId) {
       goster(null);
     } else {
-      FS.collection('otel').get().then(function(snap) {
-        var list = snap.docs.map(function(d){ return d.data(); });
-        var k = list.find(function(d) { return d && d.id === musteriId; });
-        goster(k || null);
+      // Önce doküman ID'sine göre direkt çek (depo_1, depo_2... formatı)
+      FS.collection('otel').doc(musteriId).get().then(function(doc) {
+        if (doc.exists) {
+          goster(doc.data());
+        } else {
+          // Bulunamazsa id alanına göre ara (eski kayıtlar için)
+          return FS.collection('otel').where('id', '==', musteriId).limit(1).get().then(function(snap) {
+            if (!snap.empty) {
+              goster(snap.docs[0].data());
+            } else {
+              goster(null);
+            }
+          });
+        }
       }).catch(function() {
         goster(null);
       });
