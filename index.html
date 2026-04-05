@@ -930,7 +930,7 @@ select.field-input option { background: #fff; }
     <!-- ROTUS SAHNE -->
     <div style="margin-bottom:12px;">
       <div class="stats-bar" id="statsBar" style="margin-bottom:10px;"></div>
-      <div id="rotusSahne" style="position:relative;width:100%;height:88px;border-radius:12px;overflow:visible;cursor:default;background:linear-gradient(180deg,#90caf9 0%,#e8f5e9 55%,#81c784 100%);">
+      <div id="rotusSahne" style="position:relative;width:100%;height:88px;border-radius:12px;overflow:hidden;cursor:default;background:linear-gradient(180deg,#90caf9 0%,#e8f5e9 55%,#81c784 100%);">
         <style>
           /* Bulutlar */
           .rc { position:absolute;background:rgba(255,255,255,0.85);border-radius:50px; }
@@ -943,15 +943,13 @@ select.field-input option { background: #fff; }
           .rs-ag-t { width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:16px solid #2e7d32;margin-bottom:2px; }
           .rs-ag-t2 { width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:12px solid #388e3c;margin-bottom:1px; }
           /* Araba */
-          #rsAraba { position:absolute;bottom:20px;animation:rsArabaAnim 5s ease-in-out infinite; }
+          #rsAraba { position:absolute;bottom:20px;animation:rsArabaAnim 6s linear infinite; }
           @keyframes rsArabaAnim {
-            0%   { left:-100px; opacity:1; }
-            45%  { left:calc(100% - 130px); opacity:1; }
-            55%  { left:calc(100% - 126px); opacity:1; }
-            65%  { left:calc(100% - 130px); opacity:1; }
-            80%  { left:calc(100% - 130px); opacity:1; }
-            95%  { left:calc(100% + 20px); opacity:0; }
-            100% { left:calc(100% + 20px); opacity:0; }
+            0%   { left:-150px; opacity:0; }
+            5%   { opacity:1; }
+            75%  { left:calc(100% - 50px); opacity:1; }
+            85%  { left:calc(100% - 50px); opacity:0; }
+            100% { left:calc(100% - 50px); opacity:0; }
           }
           /* Rotus */
           #rsMaskot { position:absolute;bottom:18px;right:10px;z-index:5; }
