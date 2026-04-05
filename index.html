@@ -1643,7 +1643,9 @@ function renderOteleAlinan() {
     if (donemF && k.donem !== donemF) return false;
     return !q || k.plaka.toLowerCase().includes(q) || (k.isim||'').toLowerCase().includes(q);
   }).sort((a,b) => {
-    return parseInt(b.id) - parseInt(a.id) || b.id.localeCompare(a.id);
+    var sa = parseInt(a.sira) || 9999;
+    var sb = parseInt(b.sira) || 9999;
+    return sa - sb;
   });
 
   const el = document.getElementById('oteleAlinanList');
@@ -2511,7 +2513,7 @@ function renderCards() {
           ${role === 'admin' ? `
             <button class="btn btn-secondary btn-sm" onclick="editKayit('${k.id}')">Düzenle</button>
             <button onclick="openHizmetModal('${k.id}')" style="padding:5px 12px;border-radius:6px;border:1.5px solid #f5c97a;background:var(--orange-light);color:var(--orange);font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">⏳ Montaj</button>
-            <button onclick="toggle('${k.id}','teslim')" style="padding:5px 12px;border-radius:6px;border:1.5px solid #ddd;background:#f0f0f0;color:#555;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">⏳ Teslim</button>
+            <button onclick="toggle('${k.id}','teslim')" style="padding:5px 12px;border-radius:6px;border:1.5px solid #ddd;background:#f0f0f0;color:#555;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">🤝 Teslim</button>
             <button onclick="markAsGelmeyen('${k.id}')" style="padding:5px 12px;border-radius:6px;border:1.5px solid #eee;background:#fff;color:#555;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">⏰ Gelmedi</button>
             <button onclick="quickDeleteKayit('${k.id}', event)" style="padding:5px 12px;border-radius:6px;border:1.5px solid #ffcccc;background:#fff0f0;color:#cc0000;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">Sil</button>
             ${k.tel ? `<button onclick="openWhatsappMenu('${k.id}')" style="padding:5px 12px;border-radius:6px;border:none;background:#25D366;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">📱 WhatsApp</button>` : ''}
@@ -2618,8 +2620,8 @@ function renderMontajTamam() {
         <div class="card-actions">
           <button class="btn btn-secondary btn-sm" onclick="openDetail('${k.id}')">🔍 Detay</button>
           ${role === 'admin' ? `
-            <button onclick="toggle('${k.id}','montaj')" style="padding:5px 12px;border-radius:6px;border:1.5px solid #b8eac8;background:var(--green-light);color:var(--green);font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">✅ Montaj Tamam</button>
-            <button onclick="toggle('${k.id}','teslim')" style="padding:5px 12px;border-radius:6px;border:1.5px solid #ddd;background:#f0f0f0;color:#555;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">⏳ Teslim Et</button>
+            <button onclick="toggle('${k.id}','montaj')" style="padding:5px 12px;border-radius:6px;border:1.5px solid #b8eac8;background:var(--green-light);color:var(--green);font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">🔧 Montaj Tamam</button>
+            <button onclick="toggle('${k.id}','teslim')" style="padding:5px 12px;border-radius:6px;border:1.5px solid #ddd;background:#f0f0f0;color:#555;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">🤝 Teslim Et</button>
             ${k.tel ? `<button onclick="openWhatsappMenu('${k.id}')" style="padding:5px 12px;border-radius:6px;border:none;background:#25D366;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">📱 WhatsApp</button>` : ''}
             <button onclick="quickDeleteKayit('${k.id}', event)" style="padding:5px 12px;border-radius:6px;border:1.5px solid #ffcccc;background:#fff0f0;color:#cc0000;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">Sil</button>
           ` : ''}
@@ -3971,28 +3973,6 @@ function logout() {
 // ── ROTUS CHAT ──
 var rotusChatAcik = false;
 var NL = String.fromCharCode(10);
-
-// Araba gelince balon + sapka - 5s döngü
-(function() {
-  function arabaLoop() {
-    setTimeout(function() {
-      var balon = document.getElementById('rsBalon');
-      var sapka = document.getElementById('rsSapka');
-      if (balon && !rotusChatAcik) {
-        balon.classList.add('ac');
-        if (sapka) sapka.classList.add('kalkan');
-        setTimeout(function() {
-          if (!rotusChatAcik) {
-            balon.classList.remove('ac');
-            if (sapka) sapka.classList.remove('kalkan');
-          }
-        }, 1500);
-      }
-      setTimeout(arabaLoop, 3000);
-    }, 1800);
-  }
-  setTimeout(arabaLoop, 2800);
-})();
 
 function rotusChat() {
   rotusChatAcik = true;
