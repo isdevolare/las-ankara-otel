@@ -1809,9 +1809,9 @@ async function fsSetList(col, arr) {
   // Önce mevcut dokümanları sil
   const old = await FS.collection(col).get();
   old.docs.forEach(d => batch.delete(d.ref));
-  // Yeni verileri yaz
+  // Yeni verileri yaz - kayıt id'sini doküman ID'si olarak kullan
   arr.forEach(function(item, i) {
-    var id = (item._id) ? String(item._id) : String(i);
+    var id = (item.id) ? String(item.id) : (item._id) ? String(item._id) : String(i);
     var ref = FS.collection(col).doc(id);
     var clean = Object.assign({}, item);
     delete clean._id;
