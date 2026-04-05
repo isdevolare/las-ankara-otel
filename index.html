@@ -2368,10 +2368,14 @@ function renderCards() {
 
   let filtered = all.filter(k => {
     if (k.gelmedi || k.teslim || k.montaj) return false;
-    if (!k.sira) return false; // sırası atanmamış (depo sayımına eklenmemiş) görünmez
+    if (!k.sira) return false;
     const ms = k.plaka.toLowerCase().includes(search) || k.isim.toLowerCase().includes(search) || (k.sira||'').toLowerCase().includes(search);
     const md = !donem || k.donem === donem;
     return ms && md;
+  }).sort((a,b) => {
+    var sa = parseInt((a.sira||'').replace(/\D/g,'')) || 9999;
+    var sb = parseInt((b.sira||'').replace(/\D/g,'')) || 9999;
+    return sa - sb;
   });
 
   // Stats
