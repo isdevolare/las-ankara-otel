@@ -2392,8 +2392,6 @@ function renderCards() {
   let filtered = all.filter(k => {
     if (k.gelmedi || k.teslim || k.montaj) return false;
     if (!k.sira) return false;
-    // Sadece depo sayımından gelen (isim/tel boş) kayıtları ana sayfadan gizle
-    if (k.depoKayit) return false;
     const ms = (k.plaka||'').toLocaleLowerCase('tr-TR').includes(search) || (k.isim||'').toLocaleLowerCase('tr-TR').includes(search) || (k.sira||'').includes(search);
     const md = !donem || k.donem === donem;
     return ms && md;
