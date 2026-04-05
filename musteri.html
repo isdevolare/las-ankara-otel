@@ -6,7 +6,7 @@
   <title>LAS ANKARA - Lastik Bilgim</title>
   <meta name="theme-color" content="#cc0000">
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -64,12 +64,11 @@
     var firebaseConfig = {
       apiKey: "AIzaSyCpOjpC39hZG20iW5DqHz3pN13UrIXr3II",
       authDomain: "lasankarabase.firebaseapp.com",
-      databaseURL: "https://lasankarabase-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "lasankarabase",
       appId: "1:451616245870:web:a98503047d6eaf282afe7f"
     };
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-    var FB_DB = firebase.database();
+    var FS = firebase.firestore();
 
     var params = new URLSearchParams(window.location.search);
     var musteriId = params.get('id') || params.get('musteri');
@@ -124,9 +123,8 @@
     if (!musteriId) {
       goster(null);
     } else {
-      FB_DB.ref('otel').once('value').then(function(snap) {
-        var data = snap.val();
-        var list = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+      FS.collection('otel').get().then(function(snap) {
+        var list = snap.docs.map(function(d){ return d.data(); });
         var k = list.find(function(d) { return d && d.id === musteriId; });
         goster(k || null);
       }).catch(function() {
