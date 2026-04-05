@@ -14,7 +14,7 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛞</text></svg>">
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1717,81 +1717,85 @@ function refreshAll() {
 
 
 // ── FIREBASE CONFIG ──
-// Firebase Auth init
 const firebaseConfig = {
   apiKey: "AIzaSyCpOjpC39hZG20iW5DqHz3pN13UrIXr3II",
   authDomain: "lasankarabase.firebaseapp.com",
-  databaseURL: "https://lasankarabase-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "lasankarabase",
   appId: "1:451616245870:web:a98503047d6eaf282afe7f"
 };
 if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
 const FB_AUTH = firebase.auth();
-const FB_DB = firebase.database();
-const FB_URL = 'https://lasankarabase-default-rtdb.europe-west1.firebasedatabase.app';
-var _authToken = null; // Token bir kez alınır, cache'lenir
+const FS = firebase.firestore();
 
 // In-memory cache
 let _cache = { otel: [], hurda: [], deleted: [], depo_sira: {}, gecici: [] };
 let _fbReady = false;
 let _listeners = [];
 
-function fbGet(path) {
-  return FB_DB.ref(path).once('value').then(function(snap) {
-    var d = snap.val();
-    return d || (path.includes('depo') ? {} : []);
+// ── FIRESTORE YARDIMCI FONKSİYONLAR ──
+// Koleksiyondan tüm dokümanları dizi olarak getirir
+async function fsGetList(col) {
+  const snap = await FS.collection(col).get();
+  return snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+}
+// Tek doküman getirir (depo_sira gibi obje yapıları için)
+async function fsGetDoc(col, docId) {
+  const snap = await FS.collection(col).doc(docId).get();
+  return snap.exists ? snap.data() : {};
+}
+// Tüm listeyi tek seferde yazar (eski Realtime DB .set() gibi)
+async function fsSetList(col, arr) {
+  const batch = FS.batch();
+  // Önce mevcut dokümanları sil
+  const old = await FS.collection(col).get();
+  old.docs.forEach(d => batch.delete(d.ref));
+  // Yeni verileri yaz
+  arr.forEach(function(item, i) {
+    var id = (item._id) ? String(item._id) : String(i);
+    var ref = FS.collection(col).doc(id);
+    var clean = Object.assign({}, item);
+    delete clean._id;
+    batch.set(ref, clean);
   });
+  return batch.commit();
+}
+// Tek doküman yazar (depo_sira için)
+async function fsSetDoc(col, docId, data) {
+  return FS.collection(col).doc(docId).set(data);
+}
+
+function fbGet(path) {
+  if (path === 'depo_sira') return fsGetDoc('meta', 'depo_sira');
+  return fsGetList(path);
 }
 function fbSet(path, data) {
-  return FB_DB.ref(path).set(data);
+  if (path === 'depo_sira') return fsSetDoc('meta', 'depo_sira', data);
+  return fsSetList(path, Array.isArray(data) ? data : Object.values(data).filter(Boolean));
 }
 function fbPatch(path, data) {
-  return FB_DB.ref(path).update(data);
+  return fbSet(path, data);
 }
 
-// Realtime listener using SSE
+// Realtime sync — Firestore onSnapshot (sadece değişen dokümanı çeker)
 function startRealtimeSync() {
-  // Firebase SDK realtime listeners
-  var paths = ['otel','hurda','deleted','depo_sira','gecici'];
-  paths.forEach(function(path) {
-    FB_DB.ref(path).on('value', function(snap) {
-      var d = snap.val();
-      if (path === 'depo_sira') {
-        _cache[path] = d || {};
-      } else {
-        _cache[path] = d ? (Array.isArray(d) ? d : Object.values(d)).filter(Boolean) : [];
-      }
+  var collections = ['otel','hurda','deleted','gecici'];
+  collections.forEach(function(col) {
+    var unsub = FS.collection(col).onSnapshot(function(snap) {
+      _cache[col] = snap.docs.map(function(d){ return Object.assign({ _id: d.id }, d.data()); }).filter(Boolean);
+      if (col === 'otel') _cache.otel = _cache.otel.map(function(k){ return Object.assign({}, k, {tip: k.tip || inferTipFromDonem(k.donem)}); });
       if (_fbReady) refreshAll();
     });
+    _listeners.push(unsub);
   });
-  return; // Eski SSE kodunu atla
-  const sources = [
-    { key: 'otel', path: 'otel' },
-    { key: 'hurda', path: 'hurda' },
-    { key: 'deleted', path: 'deleted' },
-    { key: 'depo_sira', path: 'depo_sira' },
-    { key: 'gecici', path: 'gecici' }
-  ];
-  sources.forEach(({ key, path }) => {
-    const es = new EventSource(`${FB_URL}/${path}.json`);
-    es.addEventListener('put', e => {
-      try {
-        const msg = JSON.parse(e.data);
-        const val = msg.data;
-        if (key === 'depo_sira') {
-          _cache[key] = val || {};
-        } else {
-          _cache[key] = val ? (Array.isArray(val) ? val : Object.values(val)).filter(Boolean) : [];
-          if (key === 'otel') _cache[key] = _cache[key].map(k => ({ ...k, tip: k.tip || inferTipFromDonem(k.donem) }));
-        }
-        if (_fbReady) refreshAll();
-      } catch(err) {}
-    });
-    _listeners.push(es);
+  // depo_sira ayrı koleksiyonda tek doküman
+  var unsubDepo = FS.collection('meta').doc('depo_sira').onSnapshot(function(snap) {
+    _cache.depo_sira = snap.exists ? snap.data() : {};
+    if (_fbReady) refreshAll();
   });
+  _listeners.push(unsubDepo);
 }
 
-// Load all data once at startup
+// İlk yükleme
 function loadAllFromFirebase() {
   return new Promise(function(resolve) {
     var loaded = { otel: false, hurda: false, deleted: false, depo_sira: false, gecici: false };
@@ -1801,42 +1805,32 @@ function loadAllFromFirebase() {
         resolve();
       }
     }
-    
-    FB_DB.ref('otel').once('value').then(function(snap) {
-      var d = snap.val();
-      var list = d ? (Array.isArray(d) ? d : Object.values(d)).filter(Boolean) : [];
+    fsGetList('otel').then(function(list) {
       _cache.otel = list.map(function(k){ return Object.assign({}, k, {tip: k.tip || inferTipFromDonem(k.donem)}); });
       try { localStorage.setItem('lc_otel', JSON.stringify(_cache.otel)); } catch(e) {}
       loaded.otel = true;
       renderOteleAlinan(); renderCards(); updateTabCounts();
       checkDone();
     });
-    
-    FB_DB.ref('hurda').once('value').then(function(snap) {
-      var d = snap.val();
-      _cache.hurda = d ? (Array.isArray(d) ? d : Object.values(d)).filter(Boolean) : [];
+    fsGetList('hurda').then(function(list) {
+      _cache.hurda = list;
       try { localStorage.setItem('lc_hurda', JSON.stringify(_cache.hurda)); } catch(e) {}
       loaded.hurda = true;
       checkDone();
     });
-    
-    FB_DB.ref('deleted').once('value').then(function(snap) {
-      var d = snap.val();
-      _cache.deleted = d ? (Array.isArray(d) ? d : Object.values(d)).filter(Boolean) : [];
+    fsGetList('deleted').then(function(list) {
+      _cache.deleted = list;
       try { localStorage.setItem('lc_deleted', JSON.stringify(_cache.deleted)); } catch(e) {}
       loaded.deleted = true;
       checkDone();
     });
-    
-    FB_DB.ref('depo_sira').once('value').then(function(snap) {
-      _cache.depo_sira = snap.val() || {};
+    fsGetDoc('meta', 'depo_sira').then(function(data) {
+      _cache.depo_sira = data || {};
       loaded.depo_sira = true;
       checkDone();
     });
-    
-    FB_DB.ref('gecici').once('value').then(function(snap) {
-      var d = snap.val();
-      _cache.gecici = d ? (Array.isArray(d) ? d : Object.values(d)).filter(Boolean) : [];
+    fsGetList('gecici').then(function(list) {
+      _cache.gecici = list;
       loaded.gecici = true;
       checkDone();
     });
@@ -3716,12 +3710,9 @@ function showToast(msg, type='') {
     if (ls) ls.style.display = 'none';
     if (as) { as.style.display = 'none'; as.classList.remove('active'); }
     if (me) me.style.display = 'flex';
-    // Firebase'den direkt veriyi çek
-    var FB_URL = 'https://lasankarabase-default-rtdb.europe-west1.firebasedatabase.app';
-    fetch(FB_URL + '/otel.json')
-      .then(function(r){ return r.json(); })
-      .then(function(data) {
-        var list = Array.isArray(data) ? data : (data ? Object.values(data) : []);
+    // Firestore'dan veriyi çek
+    fsGetList('otel')
+      .then(function(list) {
         var k = list.find(function(d){ return d && d.id === musteriId; });
         if (me) me.style.display = 'flex';
         musteriGosterDirekt(k, musteriId);
@@ -3760,10 +3751,7 @@ function showToast(msg, type='') {
       }
 
       // Arka planda Firebase'den güncelle
-      user.getIdToken().then(function(token) {
-        _authToken = token;
-        return loadAllFromFirebase();
-      }).then(function() {
+      loadAllFromFirebase().then(function() {
         renderCards();
         renderMontajTamam();
         renderOteleAlinan();
