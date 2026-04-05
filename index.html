@@ -1123,6 +1123,11 @@ select.field-input option { background: #fff; }
           <div class="field-label">Lastik Markası</div>
           <input class="field-input" id="f_marka" placeholder="Bridgestone, Pirelli...">
         </div>
+        <div class="field">
+          <div class="field-label">Diş Derinliği (mm)</div>
+          <input class="field-input" id="f_dis" placeholder="örn: 6" type="number" min="0" max="12">
+        </div>
+        <div class="field">
           <div class="field-label">Üretim Yılı</div>
           <input class="field-input" id="f_uretim" placeholder="örn: 2022" type="number" min="2000" max="2030">
         </div>
@@ -1466,6 +1471,10 @@ select.field-input option { background: #fff; }
           </select>
         </div>
         <div class="field">
+          <div class="field-label">Diş Derinliği (mm)</div>
+          <input class="field-input" id="h_dis" placeholder="örn: 5" type="number" min="0" max="12">
+        </div>
+        <div class="field">
           <div class="field-label">Fiyat (₺)</div>
           <input class="field-input" id="h_fiyat" placeholder="örn: 1500">
         </div>
@@ -1642,15 +1651,14 @@ function findDuplicateSira(sira, exceptId='') {
   return getData().find(k => (k.sira || '').toUpperCase() === sira.toUpperCase() && k.id !== exceptId) || null;
 }
 function renderOteleAlinan() {
-  const q = (document.getElementById('oteleAlinanSearch')?.value || '').toLocaleLowerCase('tr-TR');
+  const q = (document.getElementById('oteleAlinanSearch')?.value || '').toLowerCase();
   const donemF = document.getElementById('oteleAlinanDonem')?.value || '';
   const all = getData();
+  // Depo sırası atanmamış, teslim edilmemiş, gelmedi işaretlenmemiş kayıtlar
   const list = all.filter(k => {
     if (k.teslim || k.gelmedi) return false;
-    // Depo sayımından gelen boş kayıtları gizle
-    if ((k.id||'').startsWith('depo_') && !k.tel && !k.ad) return false;
     if (donemF && k.donem !== donemF) return false;
-    return !q || (k.plaka||'').toLocaleLowerCase('tr-TR').includes(q) || (k.isim||'').toLocaleLowerCase('tr-TR').includes(q);
+    return !q || k.plaka.toLowerCase().includes(q) || (k.isim||'').toLowerCase().includes(q);
   }).sort((a,b) => {
     var sa = parseInt((a.sira||'').replace(/\D/g,'')) || 9999;
     var sb = parseInt((b.sira||'').replace(/\D/g,'')) || 9999;
@@ -2207,7 +2215,7 @@ async function saveKayit() {
     Object.assign(item, {
       ad, soyad, isim, plaka, ebat,
       marka: document.getElementById('f_marka').value.trim(),
-      dis: '',
+      dis: document.getElementById('f_dis').value,
       adet: document.getElementById('f_adet').value,
       tip: document.getElementById('f_tip').value,
       donem: document.getElementById('f_donem').value,
@@ -2231,7 +2239,7 @@ async function saveKayit() {
     id: Date.now().toString(),
     ad, soyad, isim, plaka, ebat,
     marka: document.getElementById('f_marka').value.trim(),
-    dis: '',
+    dis: document.getElementById('f_dis').value,
     uretim: document.getElementById('f_uretim').value.trim(),
     adet: document.getElementById('f_adet').value,
     tip: document.getElementById('f_tip').value,
@@ -2266,7 +2274,7 @@ async function saveKayit() {
   setData(data).catch(function() { showToast('Bağlantı hatası!', 'error'); });
 }
 function clearForm() {
-  ['f_ad','f_soyad','f_plaka','f_ebat','f_marka','f_uretim','f_not','f_tel','f_sira','f_edit_id'].forEach(id => { var el = document.getElementById(id); if(el) el.value=''; });
+  ['f_ad','f_soyad','f_plaka','f_ebat','f_marka','f_dis','f_uretim','f_not','f_tel','f_sira','f_edit_id'].forEach(id => { var el = document.getElementById(id); if(el) el.value=''; });
   document.getElementById('f_adet').value = '4';
   document.getElementById('f_tip').value = 'Yazlık';
   document.getElementById('f_donem').value = '2026 Yaz';
@@ -2291,7 +2299,7 @@ function editKayit(id) {
   document.getElementById('f_plaka').value = item.plaka || '';
   document.getElementById('f_ebat').value = item.ebat || '';
   document.getElementById('f_marka').value = item.marka || '';
-  
+  document.getElementById('f_dis').value = item.dis || '';
   document.getElementById('f_adet').value = item.adet || '4';
   document.getElementById('f_tip').value = item.tip || inferTipFromDonem(item.donem);
   document.getElementById('f_donem').value = item.donem || '2026 Yaz';
@@ -2333,15 +2341,15 @@ function populateDonem() {
 }
 
 function depoAra() {
-  const q = document.getElementById('depoAramaInput').value.trim().toLocaleLowerCase('tr-TR');
+  const q = document.getElementById('depoAramaInput').value.trim().toLowerCase();
   const sonucDiv = document.getElementById('depoAramaSonuc');
   if (!q || q.length < 1) { sonucDiv.style.display = 'none'; return; }
 
   const all = getData();
   const found = all.filter(k =>
-    (k.sira||'').toLocaleLowerCase('tr-TR').includes(q) ||
-    (k.plaka||'').toLocaleLowerCase('tr-TR').includes(q) ||
-    (k.isim||'').toLocaleLowerCase('tr-TR').includes(q)
+    (k.sira||'').toLowerCase().includes(q) ||
+    k.plaka.toLowerCase().includes(q) ||
+    k.isim.toLowerCase().includes(q)
   );
 
   sonucDiv.style.display = 'block';
@@ -2387,9 +2395,7 @@ function renderCards() {
   let filtered = all.filter(k => {
     if (k.gelmedi || k.teslim || k.montaj) return false;
     if (!k.sira) return false;
-    // Sadece depo sayımından gelen (isim/tel boş) kayıtları ana sayfadan gizle
-    if ((k.id||'').startsWith('depo_') && !k.tel && !k.ad) return false;
-    const ms = (k.plaka||'').toLocaleLowerCase('tr-TR').includes(search) || (k.isim||'').toLocaleLowerCase('tr-TR').includes(search) || (k.sira||'').toLocaleLowerCase('tr-TR').includes(search);
+    const ms = k.plaka.toLowerCase().includes(search) || k.isim.toLowerCase().includes(search) || (k.sira||'').toLowerCase().includes(search);
     const md = !donem || k.donem === donem;
     return ms && md;
   }).sort((a,b) => {
@@ -2528,7 +2534,7 @@ function renderCards() {
         </div>
         <div class="card-isim">${k.isim}</div>
         <div class="card-meta">
-          ${k.ebat}${k.tip ? ' · ' + k.tip : ''}${k.marka ? ' · ' + k.marka : ''}${k.uretim ? ' · ' + k.uretim + ' üretim' : ''}<br>
+          ${k.ebat}${k.tip ? ' · ' + k.tip : ''}${k.marka ? ' · ' + k.marka : ''}${k.dis ? ' · ' + k.dis + 'mm' : ''}${k.uretim ? ' · ' + k.uretim + ' üretim' : ''}<br>
           ${k.adet} adet · ${k.tarih}
         </div>
 
@@ -2687,7 +2693,7 @@ function renderArsiv() {
         </div>
         <div class="card-isim">${k.isim}</div>
         <div class="card-meta">
-          ${k.ebat}${k.tip ? ' · ' + k.tip : ''}${k.marka ? ' · ' + k.marka : ''}${k.uretim ? ' · ' + k.uretim + ' üretim' : ''}<br>
+          ${k.ebat}${k.tip ? ' · ' + k.tip : ''}${k.marka ? ' · ' + k.marka : ''}${k.dis ? ' · ' + k.dis + 'mm' : ''}${k.uretim ? ' · ' + k.uretim + ' üretim' : ''}<br>
           ${k.adet} adet · ${k.tarih}
         </div>
         <div class="card-statuses">
@@ -2732,7 +2738,7 @@ function renderDeleted() {
           ${k.sira ? `<span style="background:#111;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:0.08em;">${k.sira}</span>` : ''}
         </div>
         <div class="card-isim">${k.isim || '-'}</div>
-        <div class="card-meta">${k.ebat || '-'}${k.tip ? ' · ' + k.tip : ''}${k.marka ? ' · ' + k.marka : ''}<br>Silinme: ${k.deletedAt || '-'}</div>
+        <div class="card-meta">${k.ebat || '-'}${k.tip ? ' · ' + k.tip : ''}${k.marka ? ' · ' + k.marka : ''}${k.dis ? ' · ' + k.dis + 'mm' : ''}<br>Silinme: ${k.deletedAt || '-'}</div>
         <div class="card-actions">
           ${role === 'admin' ? `<button class="btn btn-success btn-sm" onclick="restoreDeleted('${k.id}')">↩️ Geri Yükle</button><button class="btn btn-danger btn-sm" onclick="permanentDeleteDeleted('${k.id}')">❌ Kalıcı Sil</button>` : '<span style="font-size:12px;color:#aaa;">Sadece görüntüleme</span>'}
         </div>
@@ -2829,7 +2835,7 @@ function openDetail(id) {
     <tr><td>Ebat</td><td>${k.ebat}</td></tr>
     <tr><td>Lastik Tipi</td><td>${k.tip || inferTipFromDonem(k.donem)}</td></tr>
     <tr><td>Marka</td><td>${k.marka||'—'}</td></tr>
-    
+    <tr><td>Diş Derinliği</td><td>${k.dis ? k.dis + ' mm' : '—'}</td></tr>
     <tr><td>Üretim Yılı</td><td>${k.uretim || '—'}</td></tr>
     <tr><td>Adet</td><td>${k.adet}</td></tr>
     <tr><td>Dönem</td><td>${k.donem}</td></tr>
@@ -2844,12 +2850,9 @@ function openDetail(id) {
   `;
 
   const historyHtml = (k.history && k.history.length)
-    ? `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-         <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#666;">İşlem Geçmişi</div>
-         ${role === 'admin' ? `<button onclick="gecmisiTemizle('${k.id}')" style="font-size:10px;font-weight:700;color:#cc0000;background:#fff0f0;border:1px solid #ffcccc;border-radius:5px;padding:3px 8px;cursor:pointer;">🗑️ Temizle</button>` : ''}
-       </div>
+    ? `<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#666;margin-bottom:8px;">İşlem Geçmişi</div>
        <div style="background:#fafafa;border:1px solid #eee;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;">
-         ${k.history.map(h => `<div style="font-size:12px;line-height:1.4;"><div style="color:#111;font-weight:600;">${h.text}</div><div style="color:#888;">${h.at}</div></div>`).join('')}
+         ${k.history.slice(0,8).map(h => `<div style="font-size:12px;line-height:1.4;"><div style="color:#111;font-weight:600;">${h.text}</div><div style="color:#888;">${h.at}</div></div>`).join('')}
        </div>`
     : '';
   document.getElementById('modalHistory').innerHTML = historyHtml;
@@ -3141,18 +3144,6 @@ function renderGecici() {
 }
 
 function closeModal() { document.getElementById('detailModal').classList.remove('open'); }
-
-async function gecmisiTemizle(id) {
-  if (!confirm('İşlem geçmişi silinecek. Emin misin?')) return;
-  const data = getData();
-  const k = data.find(d => d.id === id);
-  if (!k) return;
-  k.history = [{ at: nowTR(), text: 'Geçmiş temizlendi' }];
-  _cache.otel = data;
-  openDetail(id); // Modalı güncelle
-  setData(data).catch(function(){ showToast('Bağlantı hatası!', 'error'); });
-  showToast('🗑️ Geçmiş temizlendi', 'success');
-}
 
 
 function deleteKayit(id) {
@@ -3493,7 +3484,7 @@ async function saveHurda() {
   const adet = document.getElementById('h_adet').value;
   const not = document.getElementById('h_not').value.trim();
   const tip = document.getElementById('h_tip').value;
-  
+  const dis = document.getElementById('h_dis').value.trim();
   const fiyat = document.getElementById('h_fiyat').value.trim();
   const durum = 'beklemede'; // Yeni eklenenler hep beklemede başlar
   if (!ebat || !marka) { showToast('Ebat ve marka zorunlu!', 'error'); return; }
@@ -3501,12 +3492,12 @@ async function saveHurda() {
   const data = getHurda();
   data.push({
     id: Date.now().toString(),
-    ebat, marka, donem, adet, not, tip, fiyat, durum,
+    ebat, marka, donem, adet, not, tip, dis, fiyat, durum,
     fotolar: kayitFotolar,
     tarih: new Date().toLocaleDateString('tr-TR')
   });
   await setHurda(data);
-  ['h_ebat','h_marka','h_not','h_fiyat'].forEach(id => document.getElementById(id).value = '');
+  ['h_ebat','h_marka','h_not','h_dis','h_fiyat'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('h_donem').value = 'Kış';
   document.getElementById('h_adet').value = '4';
   document.getElementById('h_tip').value = 'Depo Lastiği';
@@ -3673,7 +3664,10 @@ function openHurdaDetail(id) {
           <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Adet</div>
           <div style="font-size:16px;font-weight:800;color:#111;">${h.adet || '-'} adet</div>
         </div>
-        
+        ${h.dis ? `<div style="background:#f8f8f8;border-radius:8px;padding:10px 12px;">
+          <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Diş Derinliği</div>
+          <div style="font-size:16px;font-weight:800;color:#111;">${h.dis} mm</div>
+        </div>` : ''}
         ${h.fiyat ? `<div style="background:#f8f8f8;border-radius:8px;padding:10px 12px;">
           <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Fiyat</div>
           <div style="font-size:16px;font-weight:800;color:#111;">₺${h.fiyat}</div>
@@ -3723,7 +3717,8 @@ function sahibindenGonder(id) {
 🏷️ Marka: ${h.marka || '-'}
 📅 Dönem: ${h.donem || '-'}
 🔢 Adet: ${h.adet || '-'} adet
-${h.uretim ? `📆 Üretim Yılı: ${h.uretim}
+${h.dis ? `📏 Diş Derinliği: ${h.dis} mm
+` : ''}${h.uretim ? `📆 Üretim Yılı: ${h.uretim}
 ` : ''}${h.fiyat ? `💰 Fiyat: ${h.fiyat} ₺
 ` : ''}
 ${h.not ? `📝 Notlar: ${h.not}
@@ -4399,7 +4394,7 @@ function musteriGosterDirekt(k, id) {
       musteriKart('Dönem', k.donem || '-') +
       musteriKart('Giriş Tarihi', k.tarih || '-') +
       (k.sira ? musteriKart('Depo Sırası', k.sira) : '') +
-      
+      (k.dis ? musteriKart('Diş Derinliği', k.dis + ' mm') : '') +
     '</div>' +
     (k.not ? '<div style="background:#f8f8f8;border-radius:8px;padding:12px;font-size:13px;color:#555;margin-bottom:16px;"><strong>Not:</strong> ' + k.not + '</div>' : '') +
     '<div style="font-size:11px;color:#bbb;text-align:center;">Son güncelleme: ' + (k.tarih || '-') + '</div>';
@@ -4581,7 +4576,8 @@ function buildTireFormHtml(item) {
             <div style="font-size:15px;font-weight:800;color:#111;">${item.donem || '-'}</div>
           </div>
           <div style="background:#f8f8f8;border-radius:8px;padding:10px 12px;">
-            
+            <div style="font-size:10px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Diş Derinliği</div>
+            <div style="font-size:15px;font-weight:800;color:#111;">${item.dis ? item.dis + ' mm' : '-'}</div>
           </div>
           <div style="background:#f8f8f8;border-radius:8px;padding:10px 12px;">
             <div style="font-size:10px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Üretim Yılı</div>
