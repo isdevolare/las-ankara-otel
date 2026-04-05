@@ -1651,7 +1651,7 @@ function renderOteleAlinan() {
   const donemF = document.getElementById('oteleAlinanDonem')?.value || '';
   const all = getData();
   const list = all.filter(k => {
-    if (k.teslim || k.gelmedi) return false;
+    if (k.teslim || k.gelmedi || k.deletedAt) return false;
     // Depo sayımından gelen boş kayıtları gizle
     if (k.depoKayit) return false;
     if (donemF && k.donem !== donemF) return false;
@@ -2764,11 +2764,14 @@ async function restoreDeleted(id) {
 async function permanentDeleteDeleted(id) {
   const deleted = getDeleted();
   const item = deleted.find(k => k.id === id);
-  const mesaj = item ? `${item.plaka} · ${item.isim} kaydı kalıcı silinsin mi? Bu işlem geri alınamaz.` : 'Kayıt kalıcı silinsin mi?';
-  
-  await setDeleted(deleted.filter(k => k.id !== id));
-  refreshAll();
+  const mesaj = item ? `${item.plaka} · ${item.isim} kaydı kalıcı silinsin mi?` : 'Kayıt kalıcı silinsin mi?';
+  if (!confirm(mesaj)) return;
+  const yeni = deleted.filter(k => k.id !== id);
+  _cache.deleted = yeni;
+  renderDeleted();
+  updateTabCounts();
   showToast('❌ Kayıt kalıcı silindi', 'success');
+  setDeleted(yeni).catch(function(){ showToast('Bağlantı hatası!', 'error'); });
 }
 
 // ── DETAIL MODAL ──
