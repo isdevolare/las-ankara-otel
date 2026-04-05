@@ -1643,8 +1643,8 @@ function renderOteleAlinan() {
     if (donemF && k.donem !== donemF) return false;
     return !q || k.plaka.toLowerCase().includes(q) || (k.isim||'').toLowerCase().includes(q);
   }).sort((a,b) => {
-    var sa = parseInt(a.sira) || 9999;
-    var sb = parseInt(b.sira) || 9999;
+    var sa = parseInt((a.sira||'').replace(/\D/g,'')) || 9999;
+    var sb = parseInt((b.sira||'').replace(/\D/g,'')) || 9999;
     return sa - sb;
   });
 
@@ -2614,14 +2614,15 @@ function renderMontajTamam() {
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
           <div class="card-plaka" style="margin-bottom:0">${k.plaka}</div>
           ${k.sira ? `<span style="background:#111;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;">${k.sira}</span>` : ''}
+          <span style="background:#edfbf1;color:#1a8a3a;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;">🔧 Montaj Tamam</span>
         </div>
         <div class="card-isim">${k.isim}</div>
-        <div class="card-meta">${k.ebat}${k.marka?' · '+k.marka:''}<br>${k.adet} adet · ${k.tarih}</div>
+        <div class="card-meta">${k.ebat}${k.marka?' · '+k.marka:''} · ${k.donem}<br>${k.adet} adet · ${k.tarih}</div>
         <div class="card-actions">
           <button class="btn btn-secondary btn-sm" onclick="openDetail('${k.id}')">🔍 Detay</button>
           ${role === 'admin' ? `
-            <button onclick="toggle('${k.id}','montaj')" style="padding:5px 12px;border-radius:6px;border:1.5px solid #b8eac8;background:var(--green-light);color:var(--green);font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">🔧 Montaj Tamam</button>
-            <button onclick="toggle('${k.id}','teslim')" style="padding:5px 12px;border-radius:6px;border:1.5px solid #ddd;background:#f0f0f0;color:#555;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">🤝 Teslim Et</button>
+            <button onclick="toggle('${k.id}','montaj')" style="padding:5px 12px;border-radius:6px;border:1.5px solid #ffc8c8;background:#fff0f0;color:#cc0000;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">↩️ Geri Al</button>
+            <button onclick="toggle('${k.id}','teslim')" style="padding:5px 12px;border-radius:6px;border:1.5px solid #b8eac8;background:var(--green-light);color:var(--green);font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">🤝 Teslim Et</button>
             ${k.tel ? `<button onclick="openWhatsappMenu('${k.id}')" style="padding:5px 12px;border-radius:6px;border:none;background:#25D366;color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">📱 WhatsApp</button>` : ''}
             <button onclick="quickDeleteKayit('${k.id}', event)" style="padding:5px 12px;border-radius:6px;border:1.5px solid #ffcccc;background:#fff0f0;color:#cc0000;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">Sil</button>
           ` : ''}
@@ -2930,11 +2931,13 @@ async function montajTamamla() {
   k.hizmetler = [...geciciHizmetler];
   k.hizmetToplam = geciciHizmetler.reduce((s, h) => s + (h.fiyat || 0), 0);
   addHistory(k, `Montaj tamamlandı. Hizmetler: ${geciciHizmetler.map(h=>h.ad+'(₺'+h.fiyat+')').join(', ')||'—'} | Toplam: ₺${k.hizmetToplam}`);
-  await setData(data);
+  // Önce UI güncelle, sonra Firestore'a yaz
+  _cache.otel = data;
   closeHizmetModal();
   refreshAll();
   showPage('montaj', document.getElementById('ntab-montaj'));
-  showToast('✅ Montaj tamamlandı! Montaj Tamamlandı sekmesine taşındı', 'success');
+  showToast('✅ Montaj tamamlandı!', 'success');
+  setData(data).catch(function(){ showToast('Bağlantı hatası!', 'error'); });
 }
 
 // Hizmet raporu
