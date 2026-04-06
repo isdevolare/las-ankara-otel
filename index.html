@@ -2550,9 +2550,19 @@ async function saveKayit() {
   addHistory(item, 'Kayıt oluşturuldu');
   if (sira) addHistory(item, `Sıra no atandı: ${sira}`);
   data.push(item);
-  // Önce UI'yi güncelle, sonra Firebase'e yaz
+  var saveBtn = document.getElementById('saveKayitBtn');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = 'Kaydediliyor...'; }
+  try {
+    await setData(data);
+  } catch (e) {
+    data.pop();
+    _cache.otel = data;
+    try { localStorage.setItem('lc_otel', JSON.stringify(data)); } catch (e2) {}
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = '💾 Kaydet'; }
+    showToast('Bağlantı hatası!', 'error');
+    return;
+  }
   clearForm();
-  _cache.otel = data; // Cache'i hemen güncelle
   renderOteleAlinan();
   renderCards();
   updateTabCounts();
@@ -2561,8 +2571,6 @@ async function saveKayit() {
     var listEl = document.getElementById('oteleAlinanList');
     if (listEl) listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 200);
-  // Firebase'e arka planda yaz
-  setData(data).catch(function() { showToast('Bağlantı hatası!', 'error'); });
 }
 function clearForm() {
   ['f_ad','f_soyad','f_plaka','f_ebat','f_marka','f_uretim','f_not','f_tel','f_sira','f_edit_id'].forEach(id => { var el = document.getElementById(id); if(el) el.value=''; });
@@ -2579,7 +2587,7 @@ function clearForm() {
     zone.innerHTML = '<input type="file" accept="image/*" multiple onchange="handleMultiplePhotos(event)" id="photoInput"><div class="photo-zone-icon">📸</div><div class="photo-zone-text">Fotoğraf eklemek için tıklayın veya dosya sürükleyin</div>';
   }
   var btn = document.getElementById('saveKayitBtn');
-  if (btn) btn.innerHTML = '💾 Kaydet';
+  if (btn) { btn.disabled = false; btn.innerHTML = '💾 Kaydet'; }
 }
 function editKayit(id) {
   const item = getData().find(d => d.id === id);
