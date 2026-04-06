@@ -4762,12 +4762,18 @@ function wpLinkGonder() {
   var NL = String.fromCharCode(10);
   var k = getData().find(function(d){ return d.id === whatsappTargetId; });
   if (!k) return;
-  var link = window.location.origin + window.location.pathname.replace('index.html','').replace(/\/$/,'') + '/musteri.html?id=' + k.id;
+  // Link'i tam oluştur — ID string olarak garanti et
+  var musteriId = String(k.id);
+  var base = 'https://otel.lastigimburada.com/musteri.html';
+  var link = base + '?id=' + musteriId;
+  // WhatsApp'ta link tıklanabilir olması için: link tek başına ayrı satırda olmalı
   var mesaj = 'Değerli Müşterimiz,' + NL + NL +
-    'Lastiğiniz LAS ANKARA Lastik Oteline alınmıştır.' + NL + NL +
-    'Lastik bilgilerinizi görüntülemek için aşağıdaki bağlantıya tıklayın:' + NL +
+    'Lastiğiniz LAS ANKARA Lastik Oteline alınmıştır.' + NL +
+    'Plaka: ' + k.plaka + NL +
+    (k.sira ? 'Depo Sırası: ' + k.sira + NL : '') +
+    NL +
+    'Lastik bilgilerinizi görüntülemek için:' + NL +
     link + NL + NL +
-    'Bizi tercih ettiğiniz için teşekkür ederiz.' + NL + NL +
     'LAS ANKARA - Profesyonel Servis' + NL +
     'Tel: 0507 633 52 52';
   var tel = (k.tel||'').replace(/[^0-9]/g,'');
