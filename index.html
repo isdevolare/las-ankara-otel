@@ -4922,5 +4922,263 @@ if ('serviceWorker' in navigator) {
     </div>
   </div>
 </div>
+<!-- GEZGIN KARAKTER -->
+<div id="gezginWrap" style="position:fixed;z-index:8888;pointer-events:none;left:80px;bottom:80px;transition:none;">
+  <!-- Konuşma balonu -->
+  <div id="gezginBalon" style="position:absolute;bottom:68px;left:50%;transform:translateX(-50%) scale(0);background:#fff;border:2px solid #3a6abf;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:700;color:#222;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.18);opacity:0;transition:all 0.3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;min-width:100px;text-align:center;max-width:180px;white-space:normal;">
+    <span id="gezginBalonText">👋 Merhaba!</span>
+    <span style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:#fff;border-right:2px solid #3a6abf;border-bottom:2px solid #3a6abf;display:block;"></span>
+  </div>
+  <!-- Karakter SVG - gri ceketli mavi şapkalı adam -->
+  <div id="gezginKarakter" style="pointer-events:auto;cursor:pointer;width:56px;height:72px;position:relative;">
+    <svg id="gezginSvg" width="56" height="72" viewBox="0 0 56 72" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;display:block;">
+      <!-- Şapka gölge -->
+      <ellipse cx="28" cy="13" rx="20" ry="4" fill="#2a4a8a" opacity="0.3"/>
+      <!-- Şapka -->
+      <ellipse cx="28" cy="10" rx="18" ry="5" fill="#5b8fd4"/>
+      <rect x="13" y="5" width="30" height="10" rx="5" fill="#4a7ec4"/>
+      <ellipse cx="28" cy="5" rx="12" ry="5" fill="#5b8fd4"/>
+      <!-- Baş - siyah yuvarlak lastik karakter -->
+      <circle cx="28" cy="26" r="14" fill="#1a1a1a"/>
+      <circle cx="28" cy="26" r="11" fill="#2a2a2a"/>
+      <!-- Gözler -->
+      <circle cx="23" cy="23" r="4" fill="white"/>
+      <circle cx="33" cy="23" r="4" fill="white"/>
+      <circle cx="24" cy="24" r="2.5" fill="#222"/>
+      <circle cx="34" cy="24" r="2.5" fill="#222"/>
+      <circle cx="25" cy="23" r="1" fill="white"/>
+      <circle cx="35" cy="23" r="1" fill="white"/>
+      <!-- Gülümseme -->
+      <path d="M22 30 Q28 35 34 30" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Atkı -->
+      <path d="M18 34 Q28 38 38 34" stroke="#5b8fd4" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <line x1="30" y1="36" x2="28" y2="44" stroke="#5b8fd4" stroke-width="3"/>
+      <!-- Ceket gövde -->
+      <rect x="16" y="38" width="24" height="20" rx="4" fill="#888"/>
+      <!-- Ceket yaka -->
+      <path d="M22 38 L28 43 L34 38" fill="#777" stroke="#666" stroke-width="1"/>
+      <!-- Kollar -->
+      <rect id="gKolSol" x="8" y="38" width="9" height="16" rx="4" fill="#888"/>
+      <rect id="gKolSag" x="39" y="38" width="9" height="16" rx="4" fill="#888"/>
+      <!-- El -->
+      <circle cx="12" cy="55" r="3" fill="#1a1a1a"/>
+      <circle cx="44" cy="55" r="3" fill="#1a1a1a"/>
+      <!-- Bacaklar -->
+      <rect id="gBacakSol" x="18" y="57" width="9" height="14" rx="4" fill="#555"/>
+      <rect id="gBacakSag" x="29" y="57" width="9" height="14" rx="4" fill="#555"/>
+      <!-- Ayakkabılar -->
+      <ellipse id="gAyakSol" cx="22" cy="71" rx="6" ry="3" fill="#222"/>
+      <ellipse id="gAyakSag" cx="33" cy="71" rx="6" ry="3" fill="#222"/>
+    </svg>
+    <!-- Araba (ayrı, karakterin altında görünecek) -->
+    <div id="gezginAraba" style="display:none;position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);">
+      <svg width="80" height="36" viewBox="0 0 80 36" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="14" width="72" height="16" rx="5" fill="#4a7ec4"/>
+        <path d="M14 14 Q17 5 24 5 L56 5 Q63 5 66 14 Z" fill="#4a7ec4"/>
+        <path d="M18 13 Q20 7 25 7 L38 7 L38 13 Z" fill="#bbdefb" opacity="0.85"/>
+        <path d="M40 7 L55 7 Q60 7 62 13 L40 13 Z" fill="#bbdefb" opacity="0.85"/>
+        <ellipse cx="5" cy="20" rx="3" ry="2" fill="#fff9c4"/>
+        <rect x="68" y="17" width="5" height="5" rx="1" fill="#ff8a80"/>
+        <circle cx="18" cy="30" r="6" fill="#1a1a1a"/><circle cx="18" cy="30" r="3" fill="#555"/>
+        <circle cx="58" cy="30" r="6" fill="#1a1a1a"/><circle cx="58" cy="30" r="3" fill="#555"/>
+        <!-- Sürücü baş -->
+        <circle cx="35" cy="10" r="5" fill="#1a1a1a"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var wrap = document.getElementById('gezginWrap');
+  var karakter = document.getElementById('gezginKarakter');
+  var svgEl = document.getElementById('gezginSvg');
+  var balon = document.getElementById('gezginBalon');
+  var balonText = document.getElementById('gezginBalonText');
+  var bacakSol = document.getElementById('gBacakSol');
+  var bacakSag = document.getElementById('gBacakSag');
+  var ayakSol = document.getElementById('gAyakSol');
+  var ayakSag = document.getElementById('gAyakSag');
+  var araba = document.getElementById('gezginAraba');
+  if (!wrap) return;
+
+  var px = 80, py = window.innerHeight - 160;
+  var hedefX = px, hedefY = py;
+  var hiz = 1.2;
+  var yon = 1;
+  var balonTimer = null;
+  var modAraba = false;
+  var animReq = null;
+
+  var mesajlar = [
+    '👋 Merhaba, nasılsınız!',
+    '🛞 Yeni lastik kaydı ekleyelim!',
+    '📦 Depo sayımı tamam mı?',
+    '🚗 Müşteri yolda, hazır mısınız?',
+    '✅ Sistem çalışıyor, süper!',
+    '⚠️ Sakın yanlış silme, yemin ederim!',
+    '🎉 Bugün çok kayıt ekledik!',
+    '💪 Hadi çalışalım dostum!',
+    '🔍 Plaka araması yapalım mı?',
+    '😎 LAS ANKARA her zaman hazır!',
+    '🌟 Harika gidiyoruz!',
+    '⚡ Hızlı ol, müşteri bekliyor!',
+  ];
+  var mesajIdx = Math.floor(Math.random() * mesajlar.length);
+
+  function balonGoster(metin, sure) {
+    sure = sure || 2500;
+    if (balonTimer) clearTimeout(balonTimer);
+    balonText.textContent = metin;
+    balon.style.opacity = '1';
+    balon.style.transform = 'translateX(-50%) scale(1)';
+    balonTimer = setTimeout(function() {
+      balon.style.opacity = '0';
+      balon.style.transform = 'translateX(-50%) scale(0)';
+    }, sure);
+  }
+
+  function yeniHedef() {
+    var margin = 80;
+    var maxX = window.innerWidth - 100;
+    var maxY = window.innerHeight - 120;
+    hedefX = margin + Math.random() * (maxX - margin);
+    hedefY = margin + Math.random() * (maxY - margin);
+  }
+
+  var bacakFaz = 0;
+  function yuruyusGuncelle(hareket) {
+    if (!hareket) {
+      bacakSol.setAttribute('y', '57');
+      bacakSag.setAttribute('y', '57');
+      ayakSol.setAttribute('cy', '71');
+      ayakSag.setAttribute('cy', '71');
+      return;
+    }
+    bacakFaz += 0.18;
+    var faz = Math.sin(bacakFaz);
+    bacakSol.setAttribute('y', String(57 + faz * 4));
+    bacakSag.setAttribute('y', String(57 - faz * 4));
+    ayakSol.setAttribute('cy', String(71 + faz * 2));
+    ayakSag.setAttribute('cy', String(71 - faz * 2));
+  }
+
+  var taklaCikiyor = false;
+  function taklaAt() {
+    if (taklaCikiyor) return;
+    taklaCikiyor = true;
+    var aci = 0;
+    var iv = setInterval(function() {
+      aci += 15;
+      svgEl.style.transform = 'rotate(' + aci + 'deg)';
+      if (aci >= 360) {
+        clearInterval(iv);
+        svgEl.style.transform = yon < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+        taklaCikiyor = false;
+      }
+    }, 16);
+  }
+
+  function arabaModuAc() {
+    modAraba = true;
+    araba.style.display = 'block';
+    svgEl.style.opacity = '0.3';
+    svgEl.style.transform = 'translateY(-18px)' + (yon < 0 ? ' scaleX(-1)' : '');
+    hiz = 3.5;
+    balonGoster('🚗 Vroom vroom!', 2000);
+  }
+
+  function arabaModuKapat() {
+    modAraba = false;
+    araba.style.display = 'none';
+    svgEl.style.opacity = '1';
+    svgEl.style.transform = yon < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+    hiz = 1.2;
+  }
+
+  var adimSayac = 0;
+  function guncelle() {
+    var dx = hedefX - px;
+    var dy = hedefY - py;
+    var dist = Math.sqrt(dx*dx + dy*dy);
+    var hareket = dist > 3;
+
+    if (hareket) {
+      var nx = dx / dist * hiz;
+      var ny = dy / dist * hiz;
+      px += nx;
+      py += ny;
+      wrap.style.left = px + 'px';
+      wrap.style.top = py + 'px';
+      wrap.style.bottom = '';
+
+      // Yön güncelle
+      if (dx < -2) {
+        yon = -1;
+        if (!taklaCikiyor && !modAraba) svgEl.style.transform = 'scaleX(-1)';
+        if (modAraba) araba.style.transform = 'translateX(-50%) scaleX(-1)';
+      } else if (dx > 2) {
+        yon = 1;
+        if (!taklaCikiyor && !modAraba) svgEl.style.transform = 'scaleX(1)';
+        if (modAraba) araba.style.transform = 'translateX(-50%) scaleX(1)';
+      }
+
+      yuruyusGuncelle(!modAraba);
+      adimSayac++;
+
+      // Her 120 adımda bir balon
+      if (adimSayac % 120 === 0) {
+        balonGoster(mesajlar[mesajIdx % mesajlar.length], 2200);
+        mesajIdx++;
+      }
+    } else {
+      yuruyusGuncelle(false);
+      // Hedefe ulaştı — kısa bekle, yeni hedef
+      setTimeout(function() {
+        // Arada takla at
+        if (Math.random() < 0.35) {
+          taklaAt();
+          setTimeout(function() {
+            balonGoster(mesajlar[mesajIdx % mesajlar.length], 2000);
+            mesajIdx++;
+          }, 400);
+        }
+        // Arada araba modu
+        if (Math.random() < 0.25 && !modAraba) {
+          arabaModuAc();
+          setTimeout(arabaModuKapat, 4000);
+        }
+        yeniHedef();
+      }, 600 + Math.random() * 800);
+    }
+
+    animReq = requestAnimationFrame(guncelle);
+  }
+
+  // Tıklanınca
+  karakter.addEventListener('click', function() {
+    taklaAt();
+    balonGoster(mesajlar[mesajIdx % mesajlar.length], 2500);
+    mesajIdx++;
+  });
+
+  // Başlat
+  wrap.style.top = py + 'px';
+  wrap.style.bottom = '';
+  yeniHedef();
+  setTimeout(function() {
+    balonGoster('👋 Merhaba, ben buradayım!', 2500);
+    animReq = requestAnimationFrame(guncelle);
+  }, 1200);
+
+  // Pencere boyutu değişince
+  window.addEventListener('resize', function() {
+    px = Math.min(px, window.innerWidth - 100);
+    py = Math.min(py, window.innerHeight - 120);
+    wrap.style.left = px + 'px';
+    wrap.style.top = py + 'px';
+  });
+})();
+</script>
 </body>
 </html>
