@@ -939,61 +939,121 @@ select.field-input option { background: #fff; }
     <div style="margin-bottom:12px;">
       <div class="stats-bar" id="statsBar" style="margin-bottom:10px;"></div>
       <div style="position:relative;width:100%;">
-      <div id="rsBalon" style="position:absolute;bottom:92px;left:60%;background:#fff;border:2px solid #cc0000;border-radius:10px;padding:5px 10px;font-size:11px;font-weight:700;color:#333;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,0.15);opacity:0;transform:scale(0);transform-origin:bottom center;transition:all 0.35s cubic-bezier(.34,1.56,.64,1);pointer-events:none;z-index:20;">👋 Yardımcı olayım!<span style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:#fff;border-right:2px solid #cc0000;border-bottom:2px solid #cc0000;display:block;"></span></div>
-      <div id="rotusSahne" style="position:relative;width:100%;height:100px;border-radius:12px;overflow:hidden;cursor:default;background:linear-gradient(180deg,#90caf9 0%,#e8f5e9 55%,#81c784 100%);">
+      <!-- Konuşma balonu (sahne dışında, üstte) -->
+      <div id="rsBalon" style="position:absolute;bottom:105px;background:#fff;border:2px solid #cc0000;border-radius:10px;padding:5px 12px;font-size:11px;font-weight:700;color:#333;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,0.18);opacity:0;transform:scale(0);transform-origin:bottom center;transition:all 0.35s cubic-bezier(.34,1.56,.64,1);pointer-events:none;z-index:25;">
+        👋 Yardımcı olayım!
+        <span style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:#fff;border-right:2px solid #cc0000;border-bottom:2px solid #cc0000;display:block;"></span>
+      </div>
+
+      <div id="rotusSahne" style="position:relative;width:100%;height:110px;border-radius:12px;overflow:hidden;cursor:default;">
         <style>
-          .rc { position:absolute;background:rgba(255,255,255,0.85);border-radius:50px; }
-          #rsYol { position:absolute;bottom:0;left:0;right:0;height:22px;background:#546e7a; }
+          /* Gökyüzü katmanı - gece/gündüz geçişi */
+          #rsGokyuzu { position:absolute;inset:0;transition:background 2s ease; }
+          /* Güneş */
+          #rsGunes { position:absolute;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle,#ffe066,#ffb300);box-shadow:0 0 14px 6px rgba(255,200,0,0.5);transition:all 2.5s ease;top:8px;left:50%; }
+          /* Ay */
+          #rsAy { position:absolute;width:16px;height:16px;border-radius:50%;background:#e8e8d0;box-shadow:0 0 8px 2px rgba(200,200,160,0.4);top:8px;right:18%;opacity:0;transition:opacity 2s ease; }
+          /* Yıldızlar */
+          .rs-yildiz { position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:0;transition:opacity 1.5s ease; }
+          /* Karanlık overlay */
+          #rsGece { position:absolute;inset:0;background:rgba(10,10,40,0);transition:background 2s ease;pointer-events:none;z-index:3; }
+          /* Yol */
+          #rsYol { position:absolute;bottom:0;left:0;right:0;height:22px;background:#546e7a;z-index:4; }
           #rsYol::after { content:'';position:absolute;top:50%;left:0;right:0;height:2px;background:repeating-linear-gradient(90deg,#fff 0,#fff 18px,transparent 18px,transparent 36px);transform:translateY(-50%); }
-          .rs-ag { position:absolute;bottom:22px;display:flex;flex-direction:column;align-items:center; }
+          /* Çimen */
+          #rsZemin { position:absolute;bottom:22px;left:0;right:0;height:18px;background:#81c784;z-index:2; }
+          /* Ağaçlar */
+          .rs-ag { position:absolute;bottom:40px;display:flex;flex-direction:column;align-items:center;z-index:5; }
           .rs-ag-g { width:5px;height:9px;background:#6d4c41; }
           .rs-ag-t { width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:16px solid #2e7d32;margin-bottom:2px; }
           .rs-ag-t2 { width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:12px solid #388e3c;margin-bottom:1px; }
-          #rsAraba { position:absolute;bottom:22px; }
-          #rsMaskot { position:absolute;bottom:20px;z-index:10;cursor:pointer; }
+          /* Bulutlar */
+          .rc { position:absolute;background:rgba(255,255,255,0.85);border-radius:50px;z-index:2;transition:opacity 2s ease; }
+          /* Araba */
+          #rsAraba { position:absolute;bottom:22px;z-index:6;opacity:0; }
+          /* Far ışıkları */
+          #rsFarlar { position:absolute;bottom:30px;opacity:0;z-index:5;pointer-events:none;transition:opacity 0.5s; }
+          /* Rotus */
+          #rsMaskot { position:absolute;bottom:20px;z-index:8;cursor:pointer; }
+          /* Balon css */
           #rsBalon.ac { opacity:1!important;transform:scale(1)!important; }
-          @keyframes yukuru { 0%{transform:translateY(0) rotate(0)} 25%{transform:translateY(-4px) rotate(-8deg)} 75%{transform:translateY(-2px) rotate(8deg)} 100%{transform:translateY(0) rotate(0)} }
-          @keyframes takla { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
-          @keyframes zipla { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
-          .yuruyor { animation:yukuru 0.35s infinite; }
-          .taklaatan { animation:takla 0.5s ease-in-out; }
-          .ziplayan { animation:zipla 0.4s ease-in-out 3; }
         </style>
-        <!-- Bulutlar -->
-        <div class="rc" style="top:5px;left:8%;width:36px;height:12px;"></div>
-        <div class="rc" style="top:2px;left:11%;width:22px;height:9px;"></div>
-        <div class="rc" style="top:6px;left:35%;width:30px;height:11px;"></div>
-        <div class="rc" style="top:3px;left:38%;width:18px;height:8px;"></div>
-        <div class="rc" style="top:7px;left:60%;width:26px;height:10px;"></div>
-        <!-- Yol -->
+
+        <!-- Gökyüzü -->
+        <div id="rsGokyuzu" style="background:linear-gradient(180deg,#87ceeb 0%,#e0f7fa 60%,#c8e6c9 100%);"></div>
+        <!-- Güneş -->
+        <div id="rsGunes" style="left:70%;"></div>
+        <!-- Ay -->
+        <div id="rsAy"></div>
+        <!-- Yıldızlar -->
+        <div class="rs-yildiz" id="ry1" style="top:12%;left:15%;"></div>
+        <div class="rs-yildiz" id="ry2" style="top:8%;left:30%;"></div>
+        <div class="rs-yildiz" id="ry3" style="top:18%;left:50%;"></div>
+        <div class="rs-yildiz" id="ry4" style="top:5%;left:65%;"></div>
+        <div class="rs-yildiz" id="ry5" style="top:15%;left:80%;"></div>
+        <!-- Gece overlay -->
+        <div id="rsGece"></div>
+        <!-- Çimen & Yol -->
+        <div id="rsZemin"></div>
         <div id="rsYol"></div>
+        <!-- Bulutlar -->
+        <div class="rc" id="rc1" style="top:5px;left:8%;width:36px;height:12px;"></div>
+        <div class="rc" id="rc2" style="top:2px;left:11%;width:22px;height:9px;"></div>
+        <div class="rc" id="rc3" style="top:6px;left:35%;width:30px;height:11px;"></div>
+        <div class="rc" id="rc4" style="top:3px;left:38%;width:18px;height:8px;"></div>
+        <div class="rc" id="rc5" style="top:7px;left:60%;width:26px;height:10px;"></div>
         <!-- Ağaçlar -->
         <div class="rs-ag" style="left:6%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
-        <div class="rs-ag" style="left:16%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
-        <div class="rs-ag" style="left:28%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
-        <div class="rs-ag" style="left:44%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
-        <div class="rs-ag" style="left:58%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
-        <div class="rs-ag" style="left:72%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
-        <!-- Araba SVG -->
-        <div id="rsAraba" style="opacity:0;">
-          <svg width="140" height="34" viewBox="0 0 140 34" xmlns="http://www.w3.org/2000/svg">
-            <rect x="66" y="10" width="72" height="16" rx="3" fill="#cc0000"/>
-            <rect x="67" y="11" width="70" height="14" rx="2" fill="#fff" opacity="0.95"/>
-            <text x="102" y="22" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-size="8" font-weight="900" fill="#cc0000" letter-spacing="0.5">LAS ANKARA</text>
-            <line x1="66" y1="14" x2="63" y2="16" stroke="#888" stroke-width="1.5"/>
-            <rect x="3" y="13" width="60" height="15" rx="4" fill="#cc0000"/>
-            <path d="M14 13 Q18 4 27 4 L46 4 Q54 4 57 13 Z" fill="#cc0000"/>
-            <path d="M18 12 Q20 6 26 6 L33 6 L33 12 Z" fill="#bbdefb" opacity="0.9"/>
-            <path d="M35 6 L44 6 Q51 6 53 12 L35 12 Z" fill="#bbdefb" opacity="0.9"/>
-            <ellipse cx="7" cy="19" rx="4" ry="3" fill="#fff9c4"/>
-            <ellipse cx="7" cy="19" rx="2.5" ry="2" fill="#ffd54f"/>
-            <rect x="56" y="16" width="5" height="5" rx="1" fill="#ff8a80"/>
-            <circle cx="16" cy="28" r="6" fill="#1a1a1a"/><circle cx="16" cy="28" r="3" fill="#424242"/>
-            <circle cx="50" cy="28" r="6" fill="#1a1a1a"/><circle cx="50" cy="28" r="3" fill="#424242"/>
+        <div class="rs-ag" style="left:17%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
+        <div class="rs-ag" style="left:30%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
+        <div class="rs-ag" style="left:46%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
+        <div class="rs-ag" style="left:62%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
+        <div class="rs-ag" style="left:78%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
+
+        <!-- Far ışıkları (arabanın önünde) -->
+        <div id="rsFarlar">
+          <svg width="60" height="20" viewBox="0 0 60 20">
+            <ellipse cx="5" cy="10" rx="55" ry="8" fill="rgba(255,255,180,0.25)"/>
           </svg>
         </div>
+
+        <!-- Araba SVG — kapısı ayrı group olacak -->
+        <div id="rsAraba">
+          <svg id="rsArabaSvg" width="140" height="42" viewBox="0 0 140 42" xmlns="http://www.w3.org/2000/svg">
+            <!-- Banner arka -->
+            <rect x="66" y="14" width="72" height="16" rx="3" fill="#cc0000"/>
+            <rect x="67" y="15" width="70" height="14" rx="2" fill="#fff" opacity="0.95"/>
+            <text x="102" y="26" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-size="8" font-weight="900" fill="#cc0000" letter-spacing="0.5">LAS ANKARA</text>
+            <line x1="66" y1="18" x2="63" y2="20" stroke="#888" stroke-width="1.5"/>
+            <!-- Gövde -->
+            <rect x="3" y="17" width="60" height="15" rx="4" fill="#cc0000"/>
+            <path d="M14 17 Q18 7 27 7 L46 7 Q54 7 57 17 Z" fill="#cc0000"/>
+            <!-- Ön cam -->
+            <path d="M18 16 Q20 9 26 9 L33 9 L33 16 Z" fill="#bbdefb" opacity="0.9"/>
+            <!-- Arka cam -->
+            <path d="M35 9 L44 9 Q51 9 53 16 L35 16 Z" fill="#bbdefb" opacity="0.9"/>
+            <!-- Far -->
+            <ellipse cx="7" cy="22" rx="4" ry="3" fill="#fff9c4"/>
+            <ellipse id="rsFarIc" cx="7" cy="22" rx="2.5" ry="2" fill="#ffd54f"/>
+            <!-- Stop lambası -->
+            <rect cx="57" cy="20" x="56" y="19" width="5" height="5" rx="1" fill="#ff8a80"/>
+            <!-- Kapı — ayrı group, transform ile açılacak -->
+            <g id="rsKapi" transform-origin="35 17" style="transform-origin:35px 17px;">
+              <rect x="28" y="17" width="14" height="11" rx="1" fill="#b71c1c" stroke="#8b0000" stroke-width="0.5"/>
+              <circle cx="29" cy="22" r="1.2" fill="#ffd54f"/>
+            </g>
+            <!-- Koltuk (kapı açıkken görünsün) -->
+            <rect id="rsKoltuk" x="32" y="19" width="8" height="6" rx="2" fill="#8b0000" opacity="0"/>
+            <!-- Tekerlekler -->
+            <circle cx="16" cy="32" r="7" fill="#1a1a1a"/><circle cx="16" cy="32" r="3.5" fill="#424242"/>
+            <circle cx="50" cy="32" r="7" fill="#1a1a1a"/><circle cx="50" cy="32" r="3.5" fill="#424242"/>
+            <!-- Alt şerit -->
+            <rect x="3" y="22" width="60" height="2" rx="1" fill="#b71c1c" opacity="0.4"/>
+          </svg>
+        </div>
+
         <!-- Rotus Maskot -->
-        <div id="rsMaskot" onclick="rotusChat()" style="position:absolute;bottom:18px;right:10px;cursor:pointer;z-index:10;">
+        <div id="rsMaskot" onclick="rotusChat()" style="position:absolute;bottom:20px;cursor:pointer;">
           <svg id="rotusVucut" width="36" height="50" viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">
             <g id="rsSapka">
               <ellipse cx="80" cy="30" rx="56" ry="10" fill="#d4a820"/>
@@ -1015,9 +1075,8 @@ select.field-input option { background: #fff; }
             <rect x="55" y="148" width="50" height="45" rx="8" fill="#cc0000"/>
             <rect x="40" y="155" width="20" height="38" rx="6" fill="#cc0000"/>
             <rect x="100" y="155" width="20" height="38" rx="6" fill="#cc0000"/>
-            <!-- Bacaklar - yürüme için ayrı elemanlar -->
-            <rect id="rsBacakSol" x="62" y="193" width="18" height="17" rx="5" fill="#222"/>
-            <rect id="rsBacakSag" x="80" y="193" width="18" height="17" rx="5" fill="#222"/>
+            <rect x="62" y="193" width="18" height="17" rx="5" fill="#222"/>
+            <rect x="80" y="193" width="18" height="17" rx="5" fill="#222"/>
           </svg>
         </div>
       </div>
@@ -1025,11 +1084,21 @@ select.field-input option { background: #fff; }
     </div>
     <script>
     (function() {
-      var araba = document.getElementById('rsAraba');
-      var sahne = document.getElementById('rotusSahne');
-      var maskot = document.getElementById('rsMaskot');
-      var sapka = document.getElementById('rsSapka');
-      var balon = document.getElementById('rsBalon');
+      var araba    = document.getElementById('rsAraba');
+      var sahne    = document.getElementById('rotusSahne');
+      var maskot   = document.getElementById('rsMaskot');
+      var sapka    = document.getElementById('rsSapka');
+      var balon    = document.getElementById('rsBalon');
+      var gokyuzu  = document.getElementById('rsGokyuzu');
+      var gece     = document.getElementById('rsGece');
+      var gunes    = document.getElementById('rsGunes');
+      var ay       = document.getElementById('rsAy');
+      var farlar   = document.getElementById('rsFarlar');
+      var farIc    = document.getElementById('rsFarIc');
+      var kapi     = document.getElementById('rsKapi');
+      var koltuk   = document.getElementById('rsKoltuk');
+      var bulutlar = [document.getElementById('rc1'),document.getElementById('rc2'),document.getElementById('rc3'),document.getElementById('rc4'),document.getElementById('rc5')];
+      var yildizlar= ['ry1','ry2','ry3','ry4','ry5'].map(function(id){return document.getElementById(id);});
       if (!araba || !sahne || !maskot) return;
 
       var maskotX = 0;
@@ -1037,28 +1106,73 @@ select.field-input option { background: #fff; }
 
       function getSW() { return sahne.offsetWidth || 500; }
 
-      // Balon göster - Rotus'un yanında
+      /* --- Balon --- */
       function balonGoster(metin, sure) {
-        balon.textContent = ''; 
-        balon.innerHTML = metin + '<span style="position:absolute;bottom:-7px;right:8px;width:10px;height:10px;background:#fff;border-right:2px solid #cc0000;border-bottom:2px solid #cc0000;transform:rotate(45deg);display:block;"></span>';
-        // Balonu Rotus'un üstüne konumla
+        balon.innerHTML = metin + '<span style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:#fff;border-right:2px solid #cc0000;border-bottom:2px solid #cc0000;display:block;"></span>';
         var sw = getSW();
-        var bx = Math.min(maskotX - 60, sw - 160);
-        balon.style.left = Math.max(4, bx) + 'px';
+        var bx = Math.max(4, Math.min(maskotX - 50, sw - 170));
+        balon.style.left = bx + 'px';
         balon.style.right = 'auto';
-        balon.style.bottom = '78px';
         balon.classList.add('ac');
-        if (sure) setTimeout(function() { balon.classList.remove('ac'); }, sure);
+        if (sure) setTimeout(function(){ balon.classList.remove('ac'); }, sure);
+      }
+      function balonGizle(){ balon.classList.remove('ac'); }
+
+      /* --- Gece / Gündüz --- */
+      function geceyap() {
+        gokyuzu.style.background = 'linear-gradient(180deg,#0a0a2e 0%,#1a1a4a 60%,#2d4a2d 100%)';
+        gece.style.background = 'rgba(10,10,40,0.55)';
+        gunes.style.top = '120px'; // güneş batar
+        ay.style.opacity = '1';
+        yildizlar.forEach(function(y){ if(y) y.style.opacity='1'; });
+        bulutlar.forEach(function(b){ if(b) b.style.opacity='0.15'; });
+        // farlar yak
+        setTimeout(function(){
+          farlar.style.opacity = '1';
+          farIc.setAttribute('fill','#ffff99');
+        }, 1800);
+      }
+      function gunduzyap() {
+        gokyuzu.style.background = 'linear-gradient(180deg,#87ceeb 0%,#e0f7fa 60%,#c8e6c9 100%)';
+        gece.style.background = 'rgba(10,10,40,0)';
+        gunes.style.top = '8px';
+        ay.style.opacity = '0';
+        yildizlar.forEach(function(y){ if(y) y.style.opacity='0'; });
+        bulutlar.forEach(function(b){ if(b) b.style.opacity='1'; });
+        farlar.style.opacity = '0';
+        farIc.setAttribute('fill','#ffd54f');
       }
 
-      function balonGizle() { balon.classList.remove('ac'); }
+      /* --- Kapı aç/kapat --- */
+      function kapiAc(cb) {
+        koltuk.setAttribute('opacity','1');
+        var aci = 0;
+        var iv = setInterval(function(){
+          aci -= 3;
+          kapi.setAttribute('transform','rotate('+aci+',35,17)');
+          if (aci <= -40){ clearInterval(iv); if(cb) cb(); }
+        }, 20);
+      }
+      function kapiKapat(cb) {
+        var aci = -40;
+        var iv = setInterval(function(){
+          aci += 3;
+          kapi.setAttribute('transform','rotate('+aci+',35,17)');
+          if (aci >= 0){
+            clearInterval(iv);
+            kapi.setAttribute('transform','rotate(0,35,17)');
+            koltuk.setAttribute('opacity','0');
+            if(cb) cb();
+          }
+        }, 20);
+      }
 
-      // Rotus yürür - requestAnimationFrame ile
+      /* --- Rotus yürür --- */
       function yuru(hedefX, hiz, cb) {
         if (animFrame) cancelAnimationFrame(animFrame);
         function adim() {
           var dx = hedefX - maskotX;
-          if (Math.abs(dx) < 1) {
+          if (Math.abs(dx) < 1.2) {
             maskotX = hedefX;
             maskot.style.left = maskotX + 'px';
             if (cb) cb();
@@ -1066,107 +1180,130 @@ select.field-input option { background: #fff; }
           }
           maskotX += dx > 0 ? Math.min(hiz, dx) : Math.max(-hiz, dx);
           maskot.style.left = maskotX + 'px';
-          // Yön flip
           maskot.style.transform = dx < 0 ? 'scaleX(-1)' : 'scaleX(1)';
           animFrame = requestAnimationFrame(adim);
         }
         animFrame = requestAnimationFrame(adim);
       }
 
-      // Ana senaryo - tek döngü
+      /* ===== ANA SENARYO ===== */
       function senaryo() {
         var sw = getSW();
-        // 1. Rotus sağ tarafta başlar
-        maskotX = sw - 52;
+
+        // -- BAŞLANGIÇ: Gündüz, Rotus sağda --
+        gunduzyap();
+        maskotX = sw - 48;
         maskot.style.left = maskotX + 'px';
         maskot.style.position = 'absolute';
-        maskot.style.bottom = '18px';
+        maskot.style.bottom = '20px';
         maskot.style.right = '';
         maskot.style.transform = 'scaleX(1)';
+        maskot.style.transition = 'none';
         araba.style.opacity = '0';
         araba.style.transition = 'none';
-        araba.style.transform = 'translateX(-200px)';
+        araba.style.transform = 'translateX(-250px)';
+        kapi.setAttribute('transform','rotate(0,35,17)');
+        koltuk.setAttribute('opacity','0');
 
-        // 2. Biraz sola yürü
-        setTimeout(function() {
-          yuru(sw * 0.62, 1.8, function() {
-            // 3. Dur, arabayı çağır
-            balonGoster('🚗 Gel buraya araç!', 2000);
+        // 1. Yürü ortaya
+        setTimeout(function(){
+          yuru(sw * 0.58, 1.7, function(){
+
+            // 2. Arabayı çağır
+            balonGoster('🚗 Hadi gel, biniyorum!', 2200);
             if (sapka) sapka.classList.add('kalkan');
 
-            setTimeout(function() {
+            setTimeout(function(){
               if (sapka) sapka.classList.remove('kalkan');
               balonGizle();
 
-              // 4. Araba soldan geliyor
-              araba.style.opacity = '1';
-              araba.style.transition = 'none';
-              araba.style.transform = 'translateX(-200px)';
+              // 3. Hava kararıyor
+              geceyap();
 
-              setTimeout(function() {
-                var hedefAraba = maskotX - 144;
-                araba.style.transition = 'transform 2.6s linear';
-                araba.style.transform = 'translateX(' + hedefAraba + 'px)';
+              // 4. Araba soldan geliyor (farlarla)
+              setTimeout(function(){
+                araba.style.opacity = '1';
+                araba.style.transition = 'none';
+                var arabaBasX = -250;
+                araba.style.transform = 'translateX('+arabaBasX+'px)';
 
-                // 5. Araba yanına geldi, Rotus biniyor
-                setTimeout(function() {
-                  balonGoster('🎉 Hadi gidelim!', 1500);
-                  if (sapka) sapka.classList.add('kalkan');
+                setTimeout(function(){
+                  var arabaHedef = maskotX - 62;
+                  araba.style.transition = 'transform 2.8s linear';
+                  araba.style.transform = 'translateX('+arabaHedef+'px)';
 
-                  // Rotus arabaya atlar
-                  setTimeout(function() {
-                    maskot.style.transition = 'left 0.35s ease';
-                    maskotX = hedefAraba + 80;
-                    maskot.style.left = maskotX + 'px';
-                    maskot.style.transform = 'scaleX(-1)'; // soldan baktırıyoruz
-                  }, 500);
+                  // 5. Araba durdu - kapı açılıyor
+                  setTimeout(function(){
+                    araba.style.transition = 'none';
+                    balonGoster('🎉 Hadi gidelim!', 1600);
 
-                  // 6. Birlikte sola çıkıyorlar
-                  setTimeout(function() {
-                    balonGizle();
-                    if (sapka) sapka.classList.remove('kalkan');
-                    var cikisX = -260;
-                    araba.style.transition = 'transform 1.8s ease-in';
-                    araba.style.transform = 'translateX(' + cikisX + 'px)';
-                    maskot.style.transition = 'left 1.8s ease-in';
-                    maskotX = cikisX + 80;
-                    maskot.style.left = maskotX + 'px';
+                    kapiAc(function(){
+                      // 6. Rotus koltuğa oturuyor
+                      setTimeout(function(){
+                        maskot.style.transition = 'left 0.4s ease, bottom 0.3s ease, opacity 0.3s ease';
+                        maskotX = arabaHedef + 34;
+                        maskot.style.left = maskotX + 'px';
+                        maskot.style.bottom = '28px';
 
-                    // 7. Sahne dışına çıktılar - Rotus yalnız sağdan geri dönüyor
-                    setTimeout(function() {
-                      araba.style.opacity = '0';
-                      araba.style.transition = 'none';
-                      maskot.style.transition = 'none';
-                      maskot.style.transform = 'scaleX(1)';
-                      maskotX = sw + 60;
-                      maskot.style.left = maskotX + 'px';
+                        // 7. Küçül (oturdu)
+                        setTimeout(function(){
+                          maskot.style.transform = 'scaleX(-1) scaleY(0.7)';
+                          maskot.style.bottom = '24px';
 
-                      balonGoster('😊 Döndüm!', 1800);
+                          // 8. Kapı kapanıyor
+                          setTimeout(function(){
+                            balonGizle();
+                            kapiKapat(function(){
 
-                      // 8. Sağdan yürüyerek geri gelir
-                      setTimeout(function() {
-                        balonGizle();
-                        yuru(sw - 52, 1.6, function() {
-                          // 9. Kısa bekle, tekrar başla
-                          setTimeout(senaryo, 1200);
-                        });
-                      }, 1200);
-                    }, 1900);
-                  }, 1200);
-                }, 2700);
-              }, 80);
-            }, 2200);
+                              // 9. Birlikte sola gidiyorlar
+                              setTimeout(function(){
+                                var cikis = -280;
+                                araba.style.transition = 'transform 2s ease-in';
+                                araba.style.transform = 'translateX('+cikis+'px)';
+                                maskot.style.transition = 'left 2s ease-in, opacity 0.5s';
+                                maskotX = cikis + 34;
+                                maskot.style.left = maskotX + 'px';
+
+                                // 10. Sahne dışı - Rotus sağdan yalnız dönüyor
+                                setTimeout(function(){
+                                  araba.style.opacity = '0';
+                                  araba.style.transition = 'none';
+                                  maskot.style.transition = 'none';
+                                  maskot.style.transform = 'scaleX(-1)';
+                                  maskot.style.bottom = '20px';
+                                  maskotX = sw + 60;
+                                  maskot.style.left = maskotX + 'px';
+
+                                  // 11. Güneş doğuyor
+                                  gunduzyap();
+
+                                  // 12. Rotus sağdan yürüyerek gelir - balon gelince çıksın
+                                  setTimeout(function(){
+                                    yuru(sw - 48, 1.5, function(){
+                                      balonGoster('😊 Döndüm! Nasılsınız?', 2200);
+                                      // 13. Tekrar başla
+                                      setTimeout(senaryo, 3200);
+                                    });
+                                  }, 400);
+                                }, 2200);
+                              }, 600);
+                            });
+                          }, 700);
+                        }, 400);
+                      }, 300);
+                    });
+                  }, 2850);
+                }, 80);
+              }, 1200);
+            }, 2400);
           });
-        }, 600);
+        }, 700);
       }
 
-      // Tıklanınca şapkasını kaldır
-      maskot.addEventListener('click', function() {
-        if (sapka) {
-          sapka.classList.add('kalkan');
-          setTimeout(function() { sapka.classList.remove('kalkan'); }, 800);
-        }
-        balonGoster('👋 Yardımcı olayım!', 2000);
+      // Tıklanınca
+      maskot.addEventListener('click', function(){
+        if (sapka){ sapka.classList.add('kalkan'); setTimeout(function(){ sapka.classList.remove('kalkan'); }, 800); }
+        balonGoster('👋 Yardımcı olayım!', 2200);
       });
 
       setTimeout(senaryo, 800);
