@@ -4965,7 +4965,7 @@ async function downloadTireFormFromMenu() {
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js?v=4').then(reg => {
+    navigator.serviceWorker.register('service-worker.js?v=5').then(reg => {
       // Yeni versiyon varsa hemen güncelle
       reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;
