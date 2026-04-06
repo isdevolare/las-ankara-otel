@@ -1116,12 +1116,15 @@ select.field-input option { background: #fff; }
       var maskotX=0, aracX=0, animFrame=null;
       function getSW(){ return sahne.offsetWidth||500; }
 
-      /* BALON - maskot'un üstünde */
+      /* BALON - maskot'un gerçek pozisyonundan hesapla */
       function balonGoster(metin, sure){
+        // Rotus sahnede değilse gösterme
+        if (maskot.style.opacity === '0' || parseFloat(maskot.style.left||'0') > getSW()) return;
         balonText.textContent = metin;
-        var bx = maskotX + 20;
+        // Maskot'un sahne içindeki gerçek left pozisyonu
+        var bx = parseFloat(maskot.style.left||'0') + 20;
         var sw = getSW();
-        bx = Math.max(50, Math.min(bx, sw-120));
+        bx = Math.max(40, Math.min(bx, sw - 130));
         balon.style.left = bx + 'px';
         balon.classList.add('ac');
         if(sure) setTimeout(function(){ balon.classList.remove('ac'); }, sure);
@@ -1201,150 +1204,153 @@ select.field-input option { background: #fff; }
         /* RESET */
         gunduzyap();
         dirDurdur();
+        balonGizle();
         aracX=-230; aracWrap.style.opacity='0'; aracWrap.style.transition='none';
         aracWrap.style.transform='translateX('+aracX+'px)';
 
-        /* Rotus sağda sandalyede başlar */
-        maskotX = sw - 58;
-        maskot.style.cssText='position:absolute;bottom:20px;left:'+maskotX+'px;z-index:8;cursor:pointer;opacity:1;transform:scaleX(1);transition:none;transform-origin:bottom center;';
+        /* Rotus sağ dışarıdan gelecek — başta gizli */
+        maskotX = sw + 65;
+        maskot.style.cssText='position:absolute;bottom:20px;left:'+maskotX+'px;z-index:8;cursor:pointer;opacity:0;transform:scaleX(-1);transition:none;transform-origin:bottom center;';
 
-        /* Sandalye görünür */
+        /* Sandalye hazır ama gizli */
         var sandX = sw - 62;
         sandayle.style.left = sandX + 'px';
-        sandayle.style.opacity='1';
-
-        /* Kahve pozisyonu */
-        kahve.style.left = (maskotX+32)+'px';
-        kahve.style.bottom = '46px';
+        sandayle.style.opacity='0';
+        kahve.style.opacity='0';
         kahve.style.position = 'absolute';
+        kahve.style.bottom = '46px';
 
-        /* -- 1. Rotus oturur, kahve içer (2.5sn) -- */
+        /* -- 1. Rotus sağdan yürüyerek gelir -- */
         setTimeout(function(){
-          kahve.style.opacity='1';
-          balonGoster('☕ Ah, güzel kahve...', 3000);
-
-          /* Hafif sallanma (oturuyor efekti) */
-          var sallaN=0, sallaIv=setInterval(function(){
-            sallaN+=0.12;
-            maskot.style.transform='scaleX(1) rotate('+Math.sin(sallaN)*2+'deg)';
-          },60);
-
-          /* -- 2. Kalkıyor (2.5sn sonra) -- */
-          setTimeout(function(){
-            clearInterval(sallaIv);
-            balonGizle();
-            kahve.style.opacity='0';
-            sandayle.style.opacity='0';
+          maskot.style.opacity='1';
+          yuru(sw - 58, 1.1, function(){
             maskot.style.transform='scaleX(1)';
-            balonGoster('🚗 Hadi gidelim!', 2500);
-            if(sapka) sapka.classList.add('kalkan');
 
-            /* -- 3. Yürür sola (yavaş, 1.1px/frame) -- */
+            /* Günaydın balonu */
+            balonGoster('☀️ Günaydın!', 2200);
+
+            /* Sandalye belirir */
+            setTimeout(function(){
+              sandayle.style.opacity='1';
+              kahve.style.left = (maskotX+32)+'px';
+            }, 600);
+
+            /* -- 2. Oturur, kahve içer -- */
             setTimeout(function(){
               balonGizle();
-              if(sapka) sapka.classList.remove('kalkan');
+              kahve.style.opacity='1';
+              balonGoster('☕ Ah, güzel kahve...', 3200);
 
-              yuru(sw*0.42, 1.1, function(){
+              var sallaN=0, sallaIv=setInterval(function(){
+                sallaN+=0.1;
+                maskot.style.transform='scaleX(1) rotate('+Math.sin(sallaN)*2+'deg)';
+              },60);
 
-                /* -- 4. Duruyor, arabayı bekliyor -- */
-                balonGoster('🚗 Araç nerede?', 2200);
+              /* -- 3. Kalkıyor -- */
+              setTimeout(function(){
+                clearInterval(sallaIv);
+                balonGizle();
+                kahve.style.opacity='0';
+                sandayle.style.opacity='0';
+                maskot.style.transform='scaleX(1)';
+                if(sapka) sapka.classList.add('kalkan');
 
-                /* -- 5. Gece oluyor yavaşça -- */
-                geceyap();
-
-                /* -- 6. Araç gelir (yavaş, 3.5sn) -- */
                 setTimeout(function(){
-                  balonGizle();
-                  aracWrap.style.opacity='1'; aracWrap.style.transition='none';
-                  aracX=-230; aracWrap.style.transform='translateX('+aracX+'px)';
-                  farGuncelle(aracX);
+                  balonGoster('🚗 Hadi gidelim!', 2200);
+                  if(sapka) sapka.classList.remove('kalkan');
 
+                  /* -- 4. Yürür sola -- */
                   setTimeout(function(){
-                    var arabaHedef = maskotX - 72;
-                    var surGel = 3500;
-                    aracWrap.style.transition='transform '+surGel+'ms linear';
-                    aracWrap.style.transform='translateX('+arabaHedef+'px)';
+                    balonGizle();
+                    yuru(sw*0.42, 1.1, function(){
 
-                    var t0=Date.now(), sx0=-230;
-                    (function farAnim(){
-                      var f=Math.min((Date.now()-t0)/surGel,1);
-                      farGuncelle(sx0+(arabaHedef-sx0)*f);
-                      if(f<1) requestAnimationFrame(farAnim);
-                    })();
+                      /* -- 5. Duruyor, gece oluyor -- */
+                      balonGoster('🚗 Araç nerede?', 2200);
+                      geceyap();
 
-                    /* -- 7. Araç durdu, Rotus biner -- */
-                    setTimeout(function(){
-                      aracWrap.style.transition='none'; aracX=arabaHedef;
-                      balonGoster('😎 Ben kullanıyorum!', 2000);
-
+                      /* -- 6. Araç gelir -- */
                       setTimeout(function(){
                         balonGizle();
-                        maskot.style.transition='left 0.8s ease, bottom 0.6s ease';
-                        maskotX = aracX + 26;
-                        maskot.style.left=maskotX+'px';
-                        maskot.style.bottom='34px';
-                        maskot.style.transform='scaleX(-1) scale(0.55)';
+                        aracWrap.style.opacity='1'; aracWrap.style.transition='none';
+                        aracX=-230; aracWrap.style.transform='translateX('+aracX+'px)';
+                        farGuncelle(aracX);
 
                         setTimeout(function(){
-                          dirBaslat();
+                          var arabaHedef = maskotX - 72;
+                          var surGel = 3500;
+                          aracWrap.style.transition='transform '+surGel+'ms linear';
+                          aracWrap.style.transform='translateX('+arabaHedef+'px)';
 
-                          /* -- 8. Korna -- */
+                          var t0=Date.now(), sx0=-230;
+                          (function farAnim(){
+                            var f=Math.min((Date.now()-t0)/surGel,1);
+                            farGuncelle(sx0+(arabaHedef-sx0)*f);
+                            if(f<1) requestAnimationFrame(farAnim);
+                          })();
+
+                          /* -- 7. Araç durdu, Rotus biner -- */
                           setTimeout(function(){
-                            korna();
-                            balonGoster('📯 Beep beep!', 1500);
+                            aracWrap.style.transition='none'; aracX=arabaHedef;
+                            balonGoster('😎 Ben kullanıyorum!', 2000);
 
-                            /* -- 9. Gidiyorlar (yavaş, 3.2sn) -- */
                             setTimeout(function(){
                               balonGizle();
-                              var cikis=-(sw+260), surCik=3200;
-                              aracWrap.style.transition='transform '+surCik+'ms ease-in';
-                              aracWrap.style.transform='translateX('+cikis+'px)';
-                              maskot.style.transition='left '+surCik+'ms ease-in';
-                              maskotX=cikis+26; maskot.style.left=maskotX+'px';
+                              maskot.style.transition='left 0.8s ease, bottom 0.6s ease';
+                              maskotX = aracX + 26;
+                              maskot.style.left=maskotX+'px';
+                              maskot.style.bottom='34px';
+                              maskot.style.transform='scaleX(-1) scale(0.55)';
 
-                              var t1=Date.now(), sx1=aracX;
-                              (function farCik(){
-                                var f=Math.min((Date.now()-t1)/surCik,1);
-                                farGuncelle(sx1+(cikis-sx1)*(f*f));
-                                if(f<1) requestAnimationFrame(farCik);
-                                else farHuz.style.opacity='0';
-                              })();
-
-                              /* -- 10. Döndü, güneş doğuyor -- */
                               setTimeout(function(){
-                                aracWrap.style.opacity='0'; aracWrap.style.transition='none';
-                                dirDurdur();
-                                maskot.style.transition='none';
-                                maskot.style.bottom='20px';
-                                maskot.style.transform='scaleX(-1)';
-                                maskot.style.opacity='0';
-                                maskotX=sw+65; maskot.style.left=maskotX+'px';
+                                dirBaslat();
 
-                                gunduzyap();
-
-                                /* -- 11. Sağdan yavaşça yürüyerek gelir -- */
+                                /* -- 8. Korna -- */
                                 setTimeout(function(){
-                                  maskot.style.opacity='1';
-                                  yuru(sw-58, 1.0, function(){
-                                    maskot.style.transform='scaleX(1)';
-                                    /* Sandalye geri gelir */
-                                    sandayle.style.opacity='1';
-                                    balonGoster('☕ Bir kahve daha!', 2800);
-                                    /* Tekrar başla */
-                                    setTimeout(senaryo, 4500);
-                                  });
-                                }, 800);
-                              }, surCik+300);
-                            }, 1800);
-                          }, 700);
-                        }, 800);
-                      }, 500);
-                    }, surGel+80);
-                  }, 100);
-                }, 2500);
-              });
-            }, 2800);
-          }, 3200);
+                                  korna();
+                                  balonGoster('📯 Beep beep!', 1500);
+
+                                  /* -- 9. Gidiyorlar -- */
+                                  setTimeout(function(){
+                                    balonGizle();
+                                    var cikis=-(sw+260), surCik=3200;
+                                    aracWrap.style.transition='transform '+surCik+'ms ease-in';
+                                    aracWrap.style.transform='translateX('+cikis+'px)';
+                                    maskot.style.transition='left '+surCik+'ms ease-in';
+                                    maskotX=cikis+26; maskot.style.left=maskotX+'px';
+
+                                    var t1=Date.now(), sx1=aracX;
+                                    (function farCik(){
+                                      var f=Math.min((Date.now()-t1)/surCik,1);
+                                      farGuncelle(sx1+(cikis-sx1)*(f*f));
+                                      if(f<1) requestAnimationFrame(farCik);
+                                      else farHuz.style.opacity='0';
+                                    })();
+
+                                    /* -- 10. Güneş doğuyor, döngü -- */
+                                    setTimeout(function(){
+                                      aracWrap.style.opacity='0'; aracWrap.style.transition='none';
+                                      dirDurdur();
+                                      maskot.style.transition='none';
+                                      maskot.style.bottom='20px';
+                                      maskot.style.transform='scaleX(-1)';
+                                      maskot.style.opacity='0';
+                                      maskotX=sw+65; maskot.style.left=maskotX+'px';
+                                      gunduzyap();
+                                      setTimeout(senaryo, 1200);
+                                    }, surCik+300);
+                                  }, 1800);
+                                }, 700);
+                              }, 800);
+                            }, 500);
+                          }, surGel+80);
+                        }, 100);
+                      }, 2500);
+                    });
+                  }, 2400);
+                }, 800);
+              }, 3800);
+            }, 2400);
+          });
         }, 600);
       }
 
