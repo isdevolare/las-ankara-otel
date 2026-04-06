@@ -940,26 +940,24 @@ select.field-input option { background: #fff; }
       <div class="stats-bar" id="statsBar" style="margin-bottom:10px;"></div>
       <div style="position:relative;width:100%;">
       <div id="rsBalon" style="position:absolute;bottom:98px;right:10px;background:#fff;border:2px solid #cc0000;border-radius:10px;padding:5px 10px;font-size:11px;font-weight:700;color:#333;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,0.15);opacity:0;transform:scale(0);transform-origin:bottom right;transition:all 0.35s cubic-bezier(.34,1.56,.64,1);pointer-events:none;z-index:20;">👋 Yardımcı olayım!<span style="position:absolute;bottom:-7px;right:8px;width:10px;height:10px;background:#fff;border-right:2px solid #cc0000;border-bottom:2px solid #cc0000;transform:rotate(45deg);display:block;"></span></div>
-      <div id="rotusSahne" style="position:relative;width:100%;height:88px;border-radius:12px;overflow:hidden;cursor:default;background:linear-gradient(180deg,#90caf9 0%,#e8f5e9 55%,#81c784 100%);">
+      <div id="rotusSahne" style="position:relative;width:100%;height:100px;border-radius:12px;overflow:hidden;cursor:default;background:linear-gradient(180deg,#90caf9 0%,#e8f5e9 55%,#81c784 100%);">
         <style>
-          /* Bulutlar */
           .rc { position:absolute;background:rgba(255,255,255,0.85);border-radius:50px; }
-          /* Yol */
-          #rsYol { position:absolute;bottom:0;left:0;right:0;height:20px;background:#546e7a; }
+          #rsYol { position:absolute;bottom:0;left:0;right:0;height:22px;background:#546e7a; }
           #rsYol::after { content:'';position:absolute;top:50%;left:0;right:0;height:2px;background:repeating-linear-gradient(90deg,#fff 0,#fff 18px,transparent 18px,transparent 36px);transform:translateY(-50%); }
-          /* Ağaç */
-          .rs-ag { position:absolute;bottom:20px;display:flex;flex-direction:column;align-items:center;gap:0; }
+          .rs-ag { position:absolute;bottom:22px;display:flex;flex-direction:column;align-items:center; }
           .rs-ag-g { width:5px;height:9px;background:#6d4c41; }
           .rs-ag-t { width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:16px solid #2e7d32;margin-bottom:2px; }
           .rs-ag-t2 { width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:12px solid #388e3c;margin-bottom:1px; }
-          /* Araba */
-          #rsAraba { position:absolute;bottom:20px;left:0;transition:transform 0s linear; }
-          /* Rotus */
-          #rsMaskot { position:absolute;bottom:18px;right:10px;z-index:5; }
-          #rsSapka { transition:transform 0.4s cubic-bezier(.34,1.56,.64,1);transform-origin:50% 100%; }
-          #rsSapka.kalkan { transform:rotate(-35deg) translate(6px,-8px); }
-          /* Balon */
-          #rsBalon.ac { opacity:1 !important;transform:scale(1) !important; }
+          #rsAraba { position:absolute;bottom:22px; }
+          #rsMaskot { position:absolute;bottom:20px;z-index:10;cursor:pointer; }
+          #rsBalon.ac { opacity:1!important;transform:scale(1)!important; }
+          @keyframes yukuru { 0%{transform:translateY(0) rotate(0)} 25%{transform:translateY(-4px) rotate(-8deg)} 75%{transform:translateY(-2px) rotate(8deg)} 100%{transform:translateY(0) rotate(0)} }
+          @keyframes takla { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+          @keyframes zipla { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+          .yuruyor { animation:yukuru 0.35s infinite; }
+          .taklaatan { animation:takla 0.5s ease-in-out; }
+          .ziplayan { animation:zipla 0.4s ease-in-out 3; }
         </style>
         <!-- Bulutlar -->
         <div class="rc" style="top:5px;left:8%;width:36px;height:12px;"></div>
@@ -975,14 +973,13 @@ select.field-input option { background: #fff; }
         <div class="rs-ag" style="left:28%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
         <div class="rs-ag" style="left:44%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
         <div class="rs-ag" style="left:58%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
-        <!-- Araba SVG - sola bakan -->
-        <div id="rsAraba">
+        <div class="rs-ag" style="left:72%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
+        <!-- Araba SVG -->
+        <div id="rsAraba" style="opacity:0;">
           <svg width="140" height="34" viewBox="0 0 140 34" xmlns="http://www.w3.org/2000/svg">
-            <!-- Banner arkada -->
             <rect x="66" y="10" width="72" height="16" rx="3" fill="#cc0000"/>
             <rect x="67" y="11" width="70" height="14" rx="2" fill="#fff" opacity="0.95"/>
             <text x="102" y="22" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-size="8" font-weight="900" fill="#cc0000" letter-spacing="0.5">LAS ANKARA</text>
-            <!-- İp -->
             <line x1="66" y1="14" x2="63" y2="16" stroke="#888" stroke-width="1.5"/>
             <rect x="3" y="13" width="60" height="15" rx="4" fill="#cc0000"/>
             <path d="M14 13 Q18 4 27 4 L46 4 Q54 4 57 13 Z" fill="#cc0000"/>
@@ -993,12 +990,16 @@ select.field-input option { background: #fff; }
             <rect x="56" y="16" width="5" height="5" rx="1" fill="#ff8a80"/>
             <circle cx="16" cy="28" r="6" fill="#1a1a1a"/><circle cx="16" cy="28" r="3" fill="#424242"/>
             <circle cx="50" cy="28" r="6" fill="#1a1a1a"/><circle cx="50" cy="28" r="3" fill="#424242"/>
-            <rect x="3" y="18" width="60" height="2" rx="1" fill="#b71c1c" opacity="0.4"/>
           </svg>
         </div>
+        <!-- Konuşma balonu -->
+        <div id="rsBalon" style="position:absolute;bottom:105px;background:#fff;border:2px solid #cc0000;border-radius:10px;padding:5px 10px;font-size:11px;font-weight:700;color:#333;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,0.15);opacity:0;transform:scale(0);transform-origin:bottom center;transition:all 0.3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;z-index:20;max-width:200px;white-space:normal;text-align:center;">
+          <span id="rsBalonText">👋 Merhaba!</span>
+          <span style="position:absolute;bottom:-7px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:#fff;border-right:2px solid #cc0000;border-bottom:2px solid #cc0000;display:block;"></span>
+        </div>
         <!-- Rotus Maskot -->
-        <div id="rsMaskot" onclick="rotusChat()" style="cursor:pointer;z-index:10;">
-          <svg width="40" height="54" viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">
+        <div id="rsMaskot" onclick="rotusChat()">
+          <svg id="rotusVucut" width="36" height="50" viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">
             <g id="rsSapka">
               <ellipse cx="80" cy="30" rx="56" ry="10" fill="#d4a820"/>
               <ellipse cx="80" cy="16" rx="36" ry="20" fill="#e8c040"/>
@@ -1019,65 +1020,234 @@ select.field-input option { background: #fff; }
             <rect x="55" y="148" width="50" height="45" rx="8" fill="#cc0000"/>
             <rect x="40" y="155" width="20" height="38" rx="6" fill="#cc0000"/>
             <rect x="100" y="155" width="20" height="38" rx="6" fill="#cc0000"/>
-            <rect x="62" y="193" width="18" height="17" rx="5" fill="#222"/>
-            <rect x="80" y="193" width="18" height="17" rx="5" fill="#222"/>
+            <!-- Bacaklar - yürüme için ayrı elemanlar -->
+            <rect id="rsBacakSol" x="62" y="193" width="18" height="17" rx="5" fill="#222"/>
+            <rect id="rsBacakSag" x="80" y="193" width="18" height="17" rx="5" fill="#222"/>
           </svg>
         </div>
-        <!-- Yardım balonu -->
       </div>
       </div>
     </div>
     <script>
     (function() {
+      var maskot = document.getElementById('rsMaskot');
       var araba = document.getElementById('rsAraba');
       var sahne = document.getElementById('rotusSahne');
-      var maskot = document.getElementById('rsMaskot');
-      var sapka = document.getElementById('rsSapka');
       var balon = document.getElementById('rsBalon');
-      if (!araba || !sahne) return;
+      var balonText = document.getElementById('rsBalonText');
+      var vucut = document.getElementById('rotusVucut');
+      var bacakSol = document.getElementById('rsBacakSol');
+      var bacakSag = document.getElementById('rsBacakSag');
+      if (!maskot || !sahne) return;
 
-      function arabaAnimasyonu() {
-        var sahneW = sahne.offsetWidth;
-        var arabaW = 140;
-        var maskotSol = sahneW - maskot.offsetWidth - 14; // Rotus'un sol kenarı
-        var hedef = maskotSol - arabaW - 4; // Araba Rotus'a değeceği nokta
+      var sahneW = 0;
+      var maskotX = 0;
+      var hedefX = 0;
+      var yon = 1; // 1=sağa, -1=sola
+      var yuruyor = false;
+      var animFrame = null;
+      var balonTimer = null;
 
-        // Başlangıç: sol dışında
-        araba.style.transition = 'none';
-        araba.style.transform = 'translateX(-160px)';
-        araba.style.opacity = '1';
+      var mesajlar = [
+        '👋 Hoş geldiniz!',
+        '🛞 Yeni lastik kaydı ekleyelim mi?',
+        '📦 Depo sayımı yapalım mı?',
+        '🚗 Müşteri bekliyor, hadi hızlanalım!',
+        '✅ Harika gidiyor, devam!',
+        '🔍 Plaka araması yapalım mı?',
+        '💪 Bugün kaç kayıt ekledik?',
+        '🎉 Sistem çalışıyor, harika!',
+      ];
+      var mesajIdx = 0;
 
-        setTimeout(function() {
-          // Orta hızda sağa git — Rotus'a doğru
-          araba.style.transition = 'transform 2.8s linear';
-          araba.style.transform = 'translateX(' + hedef + 'px)';
-        }, 80);
+      function getSahneW() { return sahne.offsetWidth || 400; }
 
-        setTimeout(function() {
-          // Rotus'a dokundu — şapkasını kaldır
-          if (sapka) sapka.classList.add('kalkan');
-          if (balon) balon.classList.add('ac');
-        }, 2900);
-
-        setTimeout(function() {
-          // Kısa dur
-          if (sapka) sapka.classList.remove('kalkan');
-          if (balon) balon.classList.remove('ac');
-        }, 4200);
-
-        setTimeout(function() {
-          // Geri git sol dışına
-          araba.style.transition = 'transform 2.2s linear';
-          araba.style.transform = 'translateX(-160px)';
-        }, 4500);
-
-        setTimeout(function() {
-          // Tekrar başla
-          arabaAnimasyonu();
-        }, 7200);
+      function balonGoster(metin, sure) {
+        sure = sure || 2800;
+        if (balonTimer) clearTimeout(balonTimer);
+        balonText.textContent = metin;
+        // Balonu karakterin üstüne konumlandır
+        var mx = maskotX;
+        balon.style.left = Math.max(4, Math.min(mx - 60, getSahneW() - 180)) + 'px';
+        balon.style.opacity = '1';
+        balon.style.transform = 'scale(1)';
+        balonTimer = setTimeout(function() {
+          balon.style.opacity = '0';
+          balon.style.transform = 'scale(0)';
+        }, sure);
       }
 
-      setTimeout(arabaAnimasyonu, 800);
+      function balonGizle() {
+        if (balonTimer) clearTimeout(balonTimer);
+        balon.style.opacity = '0';
+        balon.style.transform = 'scale(0)';
+      }
+
+      function bacakAnimasyon(aktif) {
+        if (!aktif) {
+          bacakSol.setAttribute('y', '193');
+          bacakSag.setAttribute('y', '193');
+          return;
+        }
+        var t = Date.now();
+        var faz = Math.sin(t / 120);
+        bacakSol.setAttribute('y', String(193 + faz * 5));
+        bacakSag.setAttribute('y', String(193 - faz * 5));
+      }
+
+      function taklaAt(cb) {
+        var aci = 0;
+        var h = setInterval(function() {
+          aci += 18;
+          vucut.style.transform = 'rotate(' + aci + 'deg)';
+          if (aci >= 360) {
+            clearInterval(h);
+            vucut.style.transform = 'rotate(0deg)';
+            if (cb) cb();
+          }
+        }, 18);
+      }
+
+      function arabaGoster(cb) {
+        var arabaW = 140;
+        araba.style.opacity = '1';
+        araba.style.transition = 'none';
+        araba.style.transform = 'translateX(-160px) scaleX(1)';
+        setTimeout(function() {
+          var hedefAraba = maskotX - arabaW - 2;
+          araba.style.transition = 'transform 2.4s linear';
+          araba.style.transform = 'translateX(' + hedefAraba + 'px) scaleX(1)';
+          setTimeout(function() {
+            // Rotus arabaya atlıyor
+            balonGoster('🚗 Hadi binelim!', 1800);
+            maskot.style.transition = 'left 0.4s ease';
+            maskotX = hedefAraba + 55;
+            maskot.style.left = maskotX + 'px';
+            setTimeout(function() {
+              // Araba ve rotus birlikte sağa çıkıyor
+              var cikis = getSahneW() + 200;
+              araba.style.transition = 'transform 1.6s ease-in';
+              araba.style.transform = 'translateX(' + cikis + 'px) scaleX(1)';
+              maskot.style.transition = 'left 1.6s ease-in';
+              maskotX = cikis + 60;
+              maskot.style.left = maskotX + 'px';
+              setTimeout(function() {
+                araba.style.opacity = '0';
+                araba.style.transition = 'none';
+                if (cb) cb();
+              }, 1700);
+            }, 1200);
+          }, 2450);
+        }, 80);
+      }
+
+      function yuru(hedef, hiz, cb) {
+        if (animFrame) cancelAnimationFrame(animFrame);
+        yuruyor = true;
+        maskot.style.transition = 'none';
+        yon = hedef > maskotX ? 1 : -1;
+        vucut.style.transform = yon === -1 ? 'scaleX(-1)' : 'scaleX(1)';
+
+        function adim() {
+          bacakAnimasyon(true);
+          var kalan = hedef - maskotX;
+          if (Math.abs(kalan) < 1.5) {
+            maskotX = hedef;
+            maskot.style.left = maskotX + 'px';
+            bacakAnimasyon(false);
+            yuruyor = false;
+            animFrame = null;
+            if (cb) cb();
+            return;
+          }
+          maskotX += (kalan > 0 ? 1 : -1) * Math.min(hiz, Math.abs(kalan));
+          maskot.style.left = maskotX + 'px';
+          animFrame = requestAnimationFrame(adim);
+        }
+        animFrame = requestAnimationFrame(adim);
+      }
+
+      function sahneBaslat() {
+        sahneW = getSahneW();
+        maskotX = sahneW * 0.75;
+        maskot.style.left = maskotX + 'px';
+        maskot.style.position = 'absolute';
+        maskot.style.bottom = '20px';
+        maskot.style.right = '';
+        setTimeout(senaryo, 1200);
+      }
+
+      var senaryoIdx = 0;
+      function senaryo() {
+        sahneW = getSahneW();
+        var s = senaryoIdx % 5;
+        senaryoIdx++;
+
+        if (s === 0) {
+          // Sağdan sola yürü, ortada takla at
+          yuru(sahneW * 0.15, 2.2, function() {
+            balonGoster(mesajlar[mesajIdx % mesajlar.length], 2200);
+            mesajIdx++;
+            setTimeout(function() { senaryo(); }, 3500);
+          });
+        } else if (s === 1) {
+          // Takla at, sonra sağa yürü
+          taklaAt(function() {
+            balonGoster('💫 Nasıl, becerikliyim değil mi?', 2000);
+            setTimeout(function() {
+              yuru(sahneW * 0.6, 2.5, function() { senaryo(); });
+            }, 2200);
+          });
+        } else if (s === 2) {
+          // Zıpla (takla küçük)
+          balonGoster('🛞 Yeni kayıt ekleyelim mi?', 2500);
+          vucut.style.transition = 'transform 0.3s';
+          vucut.style.transform = 'translateY(-10px) ' + (yon === -1 ? 'scaleX(-1)' : 'scaleX(1)');
+          setTimeout(function() {
+            vucut.style.transform = yon === -1 ? 'scaleX(-1)' : 'scaleX(1)';
+            setTimeout(function() {
+              yuru(sahneW * 0.3, 2.0, function() { senaryo(); });
+            }, 500);
+          }, 400);
+        } else if (s === 3) {
+          // Arabaya bin
+          yuru(sahneW * 0.7, 2.0, function() {
+            arabaGoster(function() {
+              // Geri gel soldan
+              maskotX = -50;
+              maskot.style.left = maskotX + 'px';
+              vucut.style.transform = 'scaleX(1)';
+              balonGoster('🎉 Hava uçurursun beni!', 2000);
+              yuru(sahneW * 0.5, 2.5, function() { senaryo(); });
+            });
+          });
+        } else {
+          // Silinenler uyarısı ver
+          yuru(sahneW * 0.45, 1.8, function() {
+            balonGoster('⚠️ Sakın yanlışlıkla silme, hepimizi uçurursun!', 3000);
+            setTimeout(function() {
+              taklaAt(function() {
+                yuru(sahneW * 0.7, 2.0, function() { senaryo(); });
+              });
+            }, 3200);
+          });
+        }
+      }
+
+      // Tıklanınca konuş
+      maskot.addEventListener('click', function(e) {
+        e.stopPropagation();
+        balonGoster(mesajlar[mesajIdx % mesajlar.length], 2500);
+        mesajIdx++;
+        taklaAt(null);
+      });
+
+      window.addEventListener('load', function() {
+        setTimeout(sahneBaslat, 600);
+      });
+      if (document.readyState === 'complete') {
+        setTimeout(sahneBaslat, 600);
+      }
     })();
     </script>
 
