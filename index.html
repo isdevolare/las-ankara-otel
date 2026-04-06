@@ -1023,13 +1023,13 @@ select.field-input option { background: #fff; }
             <rect x="4" y="26" width="18" height="16" rx="3" fill="#b71c1c"/>
             <!-- Koltuk alanı - açık üst -->
             <rect x="22" y="22" width="82" height="4" rx="1" fill="#8b0000" opacity="0.6"/>
-            <!-- Ön koltuk -->
-            <rect x="55" y="23" width="18" height="10" rx="3" fill="#8b0000"/>
-            <!-- Arka koltuk -->
-            <rect x="28" y="23" width="16" height="10" rx="3" fill="#8b0000"/>
-            <!-- Direksiyon -->
-            <circle id="rsDireksiyon" cx="62" cy="26" r="6" fill="none" stroke="#ffd54f" stroke-width="1.8" opacity="0"/>
-            <line id="rsDireksiyonKol" x1="62" y1="22" x2="62" y2="26" stroke="#ffd54f" stroke-width="1.2" opacity="0"/>
+            <!-- Arka koltuk (sağda = arkada) -->
+            <rect x="60" y="23" width="18" height="10" rx="3" fill="#8b0000"/>
+            <!-- Ön koltuk (solda = önde) -->
+            <rect x="28" y="23" width="16" height="10" rx="3" fill="#7a0000"/>
+            <!-- Direksiyon - ön koltuğun üstünde (solda) -->
+            <circle id="rsDireksiyon" cx="34" cy="25" r="7" fill="none" stroke="#ffd54f" stroke-width="2" opacity="0"/>
+            <line id="rsDireksiyonKol" x1="34" y1="18" x2="34" y2="25" stroke="#ffd54f" stroke-width="1.5" opacity="0"/>
             <!-- Ön far -->
             <ellipse cx="7" cy="32" rx="4" ry="3" fill="#fff9c4"/>
             <ellipse id="rsFarIc" cx="7" cy="32" rx="2.8" ry="2.2" fill="#ffd54f"/>
@@ -1251,15 +1251,15 @@ select.field-input option { background: #fff; }
                     maskot.style.transform='scaleX(-1)';
                     setTimeout(function(){
                       balonGizle();
-                      // Rotus koltuk pozisyonuna gider (görünmez olur, direksiyona geçer)
-                      maskot.style.transition='left 0.45s ease, bottom 0.35s ease, opacity 0.4s';
-                      maskotX=aracX+58;
+                      // Rotus ön koltuğa oturur - küçülür, araçla hizalanır
+                      maskot.style.transition='left 0.45s ease, bottom 0.35s ease';
+                      maskotX=aracX+28; // ön koltuk pozisyonu
                       maskot.style.left=maskotX+'px';
-                      maskot.style.bottom='32px';
-                      maskot.style.transform='scaleX(-1) scaleY(0.68)';
+                      maskot.style.bottom='34px';
+                      maskot.style.transform='scaleX(-1) scale(0.55)';
+                      maskot.style.transformOrigin='bottom center';
 
                       setTimeout(function(){
-                        maskot.style.opacity='0'; // araçta gizlendi
                         direksiyonBaslat(); // direksiyon canlandı
 
                         /* 7. KORNA + balon */
@@ -1267,12 +1267,16 @@ select.field-input option { background: #fff; }
                           korna();
                           balonGoster('📯 Beep beep!', 1200);
 
-                          /* 8. Birlikte gidiyorlar */
+                          /* 8. Birlikte gidiyorlar - Rotus araçla hareket eder */
                           setTimeout(function(){
                             balonGizle();
                             var cikis=-(sw+250), sureCikis=2000;
                             aracWrap.style.transition='transform '+sureCikis+'ms ease-in';
                             aracWrap.style.transform='translateX('+cikis+'px)';
+                            // Rotus da araçla birlikte hareket eder
+                            maskot.style.transition='left '+sureCikis+'ms ease-in';
+                            maskotX = cikis+28;
+                            maskot.style.left=maskotX+'px';
 
                             var t1=Date.now(), sx1=aracX;
                             (function farCik(){
@@ -1299,6 +1303,7 @@ select.field-input option { background: #fff; }
                               setTimeout(function(){
                                 maskot.style.opacity='1';
                                 maskot.style.transform='scaleX(-1)';
+                                maskot.style.transformOrigin='';
                                 yuru(sw-46, 1.6, function(){
                                   maskot.style.transform='scaleX(1)';
                                   balonGoster('☀️ Döndüm! Nasılsınız?', 2200);
