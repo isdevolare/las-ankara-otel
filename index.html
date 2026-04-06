@@ -940,7 +940,7 @@ select.field-input option { background: #fff; }
       <div class="stats-bar" id="statsBar" style="margin-bottom:10px;"></div>
       <div style="position:relative;width:100%;">
 
-      <!-- Konuşma balonu -->
+      <!-- Balon -->
       <div id="rsBalon" style="position:absolute;background:#fff;border:2.5px solid #cc0000;border-radius:12px;padding:6px 13px;font-size:11px;font-weight:800;color:#222;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.18);opacity:0;transform:scale(0);transform-origin:bottom center;transition:all 0.35s cubic-bezier(.34,1.56,.64,1);pointer-events:none;z-index:30;bottom:122px;left:0;">
         <span id="rsBalonText">👋</span>
         <span id="rsBalonKuyruk" style="position:absolute;bottom:-8px;left:20px;transform:rotate(45deg);width:11px;height:11px;background:#fff;border-right:2.5px solid #cc0000;border-bottom:2.5px solid #cc0000;display:block;"></span>
@@ -948,11 +948,11 @@ select.field-input option { background: #fff; }
 
       <div id="rotusSahne" style="position:relative;width:100%;height:118px;border-radius:14px;overflow:hidden;cursor:default;">
         <style>
-          #rsGokyuzu{position:absolute;inset:0;transition:background 3s ease;}
-          #rsGunes{position:absolute;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle,#fff7aa,#ffcc00);box-shadow:0 0 14px 6px rgba(255,210,0,0.5);transition:all 3.5s ease;top:10px;right:10%;}
-          #rsAy{position:absolute;width:15px;height:15px;border-radius:50%;background:#dde8c0;box-shadow:0 0 6px 2px rgba(200,220,150,0.5);top:10px;right:12%;opacity:0;transition:opacity 3s ease;}
-          .rsy{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:0;transition:opacity 2.5s ease;}
-          #rsGece{position:absolute;inset:0;background:rgba(5,5,30,0);transition:background 3s ease;pointer-events:none;z-index:3;}
+          #rsGokyuzu{position:absolute;inset:0;transition:background 4s ease;}
+          #rsGunes{position:absolute;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle,#fff7aa,#ffcc00);box-shadow:0 0 16px 7px rgba(255,210,0,0.55);transition:all 4s ease;top:8px;right:6%;}
+          #rsAy{position:absolute;width:16px;height:16px;border-radius:50%;background:#dde8c0;box-shadow:0 0 7px 3px rgba(200,220,150,0.45);top:8px;right:8%;opacity:0;transition:opacity 3.5s ease;}
+          .rsy{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:0;transition:opacity 3s ease;}
+          #rsGece{position:absolute;inset:0;background:rgba(5,5,30,0);transition:background 4s ease;pointer-events:none;z-index:3;}
           #rsZemin{position:absolute;bottom:22px;left:0;right:0;height:17px;background:#66bb6a;z-index:2;}
           #rsYol{position:absolute;bottom:0;left:0;right:0;height:22px;background:#455a64;z-index:4;}
           #rsYol::after{content:'';position:absolute;top:50%;left:0;right:0;height:2px;background:repeating-linear-gradient(90deg,rgba(255,255,255,0.9) 0,rgba(255,255,255,0.9) 18px,transparent 18px,transparent 36px);transform:translateY(-50%);}
@@ -960,72 +960,67 @@ select.field-input option { background: #fff; }
           .rs-ag-g{width:5px;height:8px;background:#5d4037;}
           .rs-ag-t{width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:15px solid #2e7d32;margin-bottom:2px;}
           .rs-ag-t2{width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:11px solid #388e3c;margin-bottom:1px;}
-          .rc{position:absolute;background:rgba(255,255,255,0.88);border-radius:50px;z-index:2;transition:opacity 2.5s ease;}
+          .rc{position:absolute;background:rgba(255,255,255,0.88);border-radius:50px;z-index:2;transition:opacity 3s ease;}
           #rsAracWrap{position:absolute;bottom:21px;z-index:7;opacity:0;}
           #rsFarHuz{position:absolute;z-index:6;pointer-events:none;opacity:0;transition:opacity 1s ease;}
           #rsMaskot{position:absolute;bottom:19px;z-index:8;cursor:pointer;}
-          #rsDriveThru{position:absolute;bottom:0;left:4%;z-index:6;}
+          #rsDriveThru{position:absolute;bottom:0;z-index:6;}
+          #rsSandayle{position:absolute;bottom:22px;z-index:6;opacity:0;transition:opacity 0.7s ease;}
           #rsKahve{position:absolute;z-index:9;opacity:0;transition:opacity 0.5s ease;}
           #rsBalon.ac{opacity:1!important;transform:scale(1)!important;}
         </style>
 
-        <div id="rsGokyuzu" style="background:linear-gradient(180deg,#64b5f6 0%,#e1f5fe 55%,#a5d6a7 100%);"></div>
+        <div id="rsGokyuzu" style="background:linear-gradient(180deg,#87ceeb 0%,#e8f5fe 55%,#a5d6a7 100%);"></div>
         <div id="rsGunes"></div><div id="rsAy"></div>
-        <div class="rsy" id="ry1" style="top:9%;left:12%;"></div>
-        <div class="rsy" id="ry2" style="top:6%;left:28%;"></div>
-        <div class="rsy" id="ry3" style="top:15%;left:45%;"></div>
-        <div class="rsy" id="ry4" style="top:8%;left:63%;"></div>
-        <div class="rsy" id="ry5" style="top:13%;left:78%;"></div>
+        <div class="rsy" id="ry1" style="top:9%;left:8%;"></div>
+        <div class="rsy" id="ry2" style="top:5%;left:22%;"></div>
+        <div class="rsy" id="ry3" style="top:14%;left:40%;"></div>
+        <div class="rsy" id="ry4" style="top:7%;left:58%;"></div>
+        <div class="rsy" id="ry5" style="top:12%;left:74%;"></div>
         <div id="rsGece"></div>
         <div id="rsZemin"></div><div id="rsYol"></div>
-        <div class="rc" id="rc1" style="top:6px;left:30%;width:34px;height:11px;"></div>
-        <div class="rc" id="rc2" style="top:3px;left:33%;width:20px;height:8px;"></div>
-        <div class="rc" id="rc3" style="top:8px;left:52%;width:28px;height:10px;"></div>
-        <div class="rc" id="rc4" style="top:4px;left:55%;width:16px;height:7px;"></div>
-        <div class="rc" id="rc5" style="top:7px;left:72%;width:24px;height:9px;"></div>
-        <div class="rs-ag" style="left:28%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
-        <div class="rs-ag" style="left:42%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
-        <div class="rs-ag" style="left:58%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
-        <div class="rs-ag" style="left:72%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
-        <div class="rs-ag" style="left:86%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
+        <div class="rc" id="rc1" style="top:6px;left:5%;width:34px;height:11px;"></div>
+        <div class="rc" id="rc2" style="top:3px;left:8%;width:20px;height:8px;"></div>
+        <div class="rc" id="rc3" style="top:8px;left:28%;width:28px;height:10px;"></div>
+        <div class="rc" id="rc4" style="top:4px;left:31%;width:16px;height:7px;"></div>
+        <div class="rc" id="rc5" style="top:7px;left:52%;width:24px;height:9px;"></div>
+        <div class="rs-ag" style="left:5%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
+        <div class="rs-ag" style="left:18%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
+        <div class="rs-ag" style="left:32%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
+        <div class="rs-ag" style="left:48%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
+        <div class="rs-ag" style="left:63%;"><div class="rs-ag-t2"></div><div class="rs-ag-t"></div><div class="rs-ag-g"></div></div>
 
-        <!-- DRIVE THRU — sol tarafta sabit -->
-        <div id="rsDriveThru">
-          <svg width="58" height="118" viewBox="0 0 58 118" xmlns="http://www.w3.org/2000/svg">
-            <!-- Bina gövde -->
-            <rect x="0" y="20" width="55" height="98" rx="3" fill="#b71c1c"/>
-            <rect x="2" y="22" width="51" height="96" rx="2" fill="#e53935"/>
-            <!-- Çatı -->
-            <rect x="0" y="14" width="58" height="10" rx="2" fill="#7f0000"/>
-            <!-- Tabela -->
-            <rect x="0" y="14" width="58" height="28" rx="3" fill="#fff"/>
-            <rect x="2" y="16" width="54" height="24" rx="2" fill="#cc0000"/>
-            <text x="29" y="26" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-size="4.2" font-weight="900" fill="#fff">LASTİĞİMBURADA</text>
-            <text x="29" y="34" text-anchor="middle" font-family="Arial,sans-serif" font-size="4" fill="#ffd54f" font-weight="800">DRIVE THRU ☕</text>
-            <!-- Pencere servis -->
+        <!-- DRIVE THRU — SAĞ tarafta -->
+        <div id="rsDriveThru" style="right:0;">
+          <svg width="62" height="118" viewBox="0 0 62 118" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="20" width="58" height="98" rx="3" fill="#b71c1c"/>
+            <rect x="6" y="22" width="56" height="96" rx="2" fill="#e53935"/>
+            <rect x="2" y="14" width="60" height="10" rx="2" fill="#7f0000"/>
+            <rect x="2" y="14" width="60" height="28" rx="3" fill="#fff"/>
+            <rect x="4" y="16" width="56" height="24" rx="2" fill="#cc0000"/>
+            <text x="32" y="26" text-anchor="middle" font-family="Montserrat,Arial,sans-serif" font-size="4.2" font-weight="900" fill="#fff">LASTİĞİMBURADA</text>
+            <text x="32" y="34" text-anchor="middle" font-family="Arial,sans-serif" font-size="4" fill="#ffd54f" font-weight="800">DRIVE THRU ☕</text>
+            <!-- Servis penceresi (solda, araca bakan taraf) -->
             <rect x="4" y="50" width="30" height="24" rx="3" fill="#1565c0"/>
             <rect x="6" y="52" width="26" height="20" rx="2" fill="#1976d2"/>
             <rect x="4" y="50" width="30" height="24" rx="3" fill="none" stroke="#fff" stroke-width="1.5"/>
             <!-- Görevli -->
-            <circle cx="19" cy="60" r="5" fill="#1a1a1a"/>
-            <circle cx="18" cy="59" r="3.5" fill="#2a2a2a"/>
-            <circle cx="16.5" cy="58" r="1.2" fill="white"/><circle cx="19.5" cy="58" r="1.2" fill="white"/>
-            <path d="M16 62 Q19 64 22 62" stroke="white" stroke-width="0.8" fill="none"/>
-            <!-- Kahve pencereden uzanıyor -->
+            <circle cx="21" cy="61" r="5" fill="#1a1a1a"/>
+            <circle cx="20" cy="60" r="3.5" fill="#2a2a2a"/>
+            <circle cx="18.5" cy="59" r="1.2" fill="white"/><circle cx="21.5" cy="59" r="1.2" fill="white"/>
+            <path d="M18 63 Q21 65 24 63" stroke="white" stroke-width="0.8" fill="none"/>
+            <!-- Kahve el -->
             <g id="dtElKahve" opacity="0">
-              <!-- El -->
-              <rect x="32" y="57" width="8" height="5" rx="2" fill="#1a1a1a"/>
-              <!-- Bardak -->
-              <path d="M38 50 L41 62 L47 62 L50 50 Z" fill="#fff" stroke="#ddd" stroke-width="0.7"/>
-              <ellipse cx="44" cy="52" rx="4" ry="1.5" fill="#795548"/>
-              <path d="M50 54 Q54 54 54 57 Q54 61 50 60" stroke="#ddd" stroke-width="1.2" fill="none"/>
+              <rect x="0" y="57" width="6" height="5" rx="2" fill="#1a1a1a"/>
+              <path d="M-4 50 L-1 62 L5 62 L8 50 Z" fill="#fff" stroke="#ddd" stroke-width="0.7"/>
+              <ellipse cx="2" cy="52" rx="4" ry="1.5" fill="#795548"/>
+              <path d="M-4 54 Q-8 54 -8 57 Q-8 61 -4 60" stroke="#ddd" stroke-width="1.2" fill="none"/>
             </g>
-            <!-- Kapı -->
-            <rect x="16" y="86" width="22" height="32" rx="2" fill="#b71c1c" stroke="#fff" stroke-width="1"/>
-            <circle cx="34" cy="102" r="1.5" fill="#ffd54f"/>
-            <!-- Mikrofon kutusu -->
-            <rect x="44" y="60" width="10" height="14" rx="2" fill="#333"/>
-            <circle cx="49" cy="67" r="2.5" fill="#222"/>
+            <rect x="20" y="86" width="22" height="32" rx="2" fill="#b71c1c" stroke="#fff" stroke-width="1"/>
+            <circle cx="22" cy="102" r="1.5" fill="#ffd54f"/>
+            <!-- Mikrofon sol tarafta -->
+            <rect x="2" y="60" width="10" height="14" rx="2" fill="#333"/>
+            <circle cx="7" cy="67" r="2.5" fill="#222"/>
           </svg>
         </div>
 
@@ -1064,8 +1059,18 @@ select.field-input option { background: #fff; }
           </svg>
         </div>
 
-        <!-- Kahve (elde taşınan) -->
-        <div id="rsKahve">
+        <!-- Sandalye -->
+        <div id="rsSandayle" style="position:absolute;bottom:22px;">
+          <svg width="26" height="28" viewBox="0 0 26 28" xmlns="http://www.w3.org/2000/svg">
+            <rect x="17" y="3" width="4" height="17" rx="2" fill="#8d6e63"/>
+            <rect x="5" y="14" width="19" height="4" rx="2" fill="#a1887f"/>
+            <rect x="6" y="18" width="3" height="10" rx="1" fill="#8d6e63"/>
+            <rect x="18" y="18" width="3" height="10" rx="1" fill="#8d6e63"/>
+          </svg>
+        </div>
+
+        <!-- Kahve -->
+        <div id="rsKahve" style="position:absolute;bottom:44px;">
           <svg width="11" height="15" viewBox="0 0 11 15" xmlns="http://www.w3.org/2000/svg">
             <path d="M2 4 Q3 2 2 0" stroke="#ccc" stroke-width="1" fill="none" opacity="0.7"/>
             <path d="M6 4 Q7 2 6 0" stroke="#ccc" stroke-width="1" fill="none" opacity="0.7"/>
@@ -1119,6 +1124,7 @@ select.field-input option { background: #fff; }
       var direksiyon = document.getElementById('rsDireksiyon');
       var dirKol     = document.getElementById('rsDireksiyonKol');
       var dtElKahve  = document.getElementById('dtElKahve');
+      var sandayle   = document.getElementById('rsSandayle');
       var kahve      = document.getElementById('rsKahve');
       var bulutlar   = [1,2,3,4,5].map(function(i){return document.getElementById('rc'+i);});
       var yildizlar  = [1,2,3,4,5].map(function(i){return document.getElementById('ry'+i);});
@@ -1126,20 +1132,19 @@ select.field-input option { background: #fff; }
 
       var maskotX=0, aracX=0, animFrame=null;
       function getSW(){ return sahne.offsetWidth||500; }
+      var DT_W = 62; // drive-thru genişliği
 
-      /* BALON — maskotun tam üstünde */
+      /* BALON */
       function balonGoster(metin, sure){
         var mx = parseFloat(maskot.style.left||'0');
         var sw = getSW();
-        if(parseFloat(maskot.style.opacity||'1')<0.1 || mx>sw+20 || mx<-80) return;
+        if(parseFloat(maskot.style.opacity||'1')<0.1 || mx>sw+30 || mx<-60) return;
         balonText.textContent = metin;
-        // Balonun sol kenarı
-        var maskotMerkez = mx + 19;
-        var balonLeft = Math.max(4, Math.min(maskotMerkez - 24, sw - 180));
-        balon.style.left = balonLeft + 'px';
-        // Kuyruk maskotun ortasının üstünde
-        var kuyrukLeft = Math.max(8, Math.min(maskotMerkez - balonLeft - 5, 160));
-        balonKuyruk.style.left = kuyrukLeft + 'px';
+        var merkez = mx + 19;
+        var bl = Math.max(4, Math.min(merkez - 20, sw - 185));
+        balon.style.left = bl + 'px';
+        var kl = Math.max(8, Math.min(merkez - bl - 5, 150));
+        balonKuyruk.style.left = kl + 'px';
         balon.classList.add('ac');
         if(sure) setTimeout(function(){ balon.classList.remove('ac'); }, sure);
       }
@@ -1154,24 +1159,34 @@ select.field-input option { background: #fff; }
         }catch(e){}
       }
 
-      /* GÜNDÜZ / GECE */
+      /* GÜNDÜZ */
       function gunduzyap(){
-        gokyuzu.style.background='linear-gradient(180deg,#64b5f6 0%,#e1f5fe 55%,#a5d6a7 100%)';
+        gokyuzu.style.background='linear-gradient(180deg,#87ceeb 0%,#e8f5fe 55%,#a5d6a7 100%)';
         gece.style.background='rgba(5,5,30,0)';
-        gunes.style.top='10px';gunes.style.opacity='1';
+        gunes.style.top='8px';gunes.style.opacity='1';
         ay.style.opacity='0';
         yildizlar.forEach(function(y){if(y)y.style.opacity='0';});
         bulutlar.forEach(function(b){if(b)b.style.opacity='1';});
         farHuz.style.opacity='0';farIc.setAttribute('fill','#ffd54f');
       }
-      function geceyap(){
-        gokyuzu.style.background='linear-gradient(180deg,#0d1b3e 0%,#1a2a5e 55%,#1b3a1b 100%)';
-        gece.style.background='rgba(5,5,30,0.6)';
-        gunes.style.top='130px';gunes.style.opacity='0';
-        ay.style.opacity='1';
-        yildizlar.forEach(function(y){if(y)y.style.opacity='1';});
-        bulutlar.forEach(function(b){if(b)b.style.opacity='0.07';});
-        setTimeout(function(){farHuz.style.opacity='1';farIc.setAttribute('fill','#ffffaa');},1200);
+
+      /* GECE — kademeli */
+      function geceyap(tam){
+        if(tam){
+          gokyuzu.style.background='linear-gradient(180deg,#0d1b3e 0%,#1a2a5e 55%,#1b3a1b 100%)';
+          gece.style.background='rgba(5,5,30,0.65)';
+          gunes.style.top='140px';gunes.style.opacity='0';
+          ay.style.opacity='1';
+          yildizlar.forEach(function(y){if(y)y.style.opacity='1';});
+          bulutlar.forEach(function(b){if(b)b.style.opacity='0.07';});
+          setTimeout(function(){farHuz.style.opacity='1';farIc.setAttribute('fill','#ffffaa');},1200);
+        } else {
+          // Hafif kararma
+          gokyuzu.style.background='linear-gradient(180deg,#4a8fc0 0%,#b8d8ee 55%,#8abd8a 100%)';
+          gece.style.background='rgba(5,5,30,0.2)';
+          gunes.style.top='40px';gunes.style.opacity='0.6';
+          bulutlar.forEach(function(b){if(b)b.style.opacity='0.5';});
+        }
       }
 
       /* DİREKSİYON */
@@ -1202,30 +1217,29 @@ select.field-input option { background: #fff; }
       /* ===== SENARYO ===== */
       function senaryo(){
         var sw=getSW();
-        var dtW=62; // drive-thru genişliği
 
         /* RESET */
         gunduzyap();dirDurdur();balonGizle();
         aracX=-240;aracWrap.style.opacity='0';aracWrap.style.transition='none';
         aracWrap.style.transform='translateX('+aracX+'px)';
         dtElKahve.setAttribute('opacity','0');
-        kahve.style.opacity='0';kahve.style.position='absolute';kahve.style.bottom='44px';
+        sandayle.style.opacity='0';kahve.style.opacity='0';
 
-        /* Rotus drive-thru'nun hemen sağında başlar */
-        maskotX = dtW + 14;
-        maskot.style.cssText='position:absolute;bottom:19px;left:'+maskotX+'px;z-index:8;cursor:pointer;opacity:1;transform:scaleX(-1);transition:none;transform-origin:bottom center;';
+        /* Rotus drive-thru'nun hemen solunda başlar — sağda */
+        maskotX = sw - DT_W - 48;
+        maskot.style.cssText='position:absolute;bottom:19px;left:'+maskotX+'px;z-index:8;cursor:pointer;opacity:1;transform:scaleX(1);transition:none;transform-origin:bottom center;';
 
-        /* 1. "Günaydın! Kahve alalım!" */
+        /* ☀️ 1. Günaydın */
         setTimeout(function(){
-          maskot.style.transform='scaleX(1)';
-          balonGoster('☀️ Günaydın! Kahve zamanı!',2500);
+          balonGoster('☀️ Günaydın! Kahve zamanı!', 2400);
 
-          /* 2. Drive-thru penceresine yaklaşıyor (sola yürür) */
+          /* 2. Pencereye döner, sipariş verir */
           setTimeout(function(){
             balonGizle();
-            yuru(dtW+2, 0.9, function(){
-              maskot.style.transform='scaleX(-1)';
-              balonGoster('📢 Bir büyük lütfen!',2000);
+            maskot.style.transform='scaleX(1)'; // sağa bakıyor (drive-thru sağda)
+
+            setTimeout(function(){
+              balonGoster('📢 Bir büyük kahve lütfen!', 2000);
 
               /* 3. Pencereden kahve uzanıyor */
               setTimeout(function(){
@@ -1233,66 +1247,66 @@ select.field-input option { background: #fff; }
                 dtElKahve.setAttribute('opacity','1');
 
                 setTimeout(function(){
-                  balonGoster('☕ Teşekkürler!',1800);
-                  /* Kahveyi alır */
+                  balonGoster('☕ Teşekkürler!', 1600);
+
+                  /* 4. Kahveyi alır */
                   setTimeout(function(){
                     dtElKahve.setAttribute('opacity','0');
-                    kahve.style.left=(maskotX+30)+'px';
+                    kahve.style.left=(maskotX-10)+'px';
                     kahve.style.opacity='1';
+                    balonGizle();
 
-                    /* 4. Sağa döner, yürür, kahve içer */
+                    /* 5. Sandalye çıkar, oturur */
                     setTimeout(function(){
-                      balonGizle();
-                      maskot.style.transform='scaleX(1)';
+                      sandayle.style.left=(maskotX-4)+'px';
+                      sandayle.style.opacity='1';
+                      balonGoster('☕ Mmm... harika!', 3200);
 
-                      /* Yürürken kahveyi içer — orta noktaya gider */
-                      var hedef=sw*0.45;
-                      yuru(hedef, 1.0, function(){
+                      var sN=0, sIv=setInterval(function(){
+                        sN+=0.08;
+                        maskot.style.transform='scaleX(1) rotate('+Math.sin(sN)*1.5+'deg)';
+                      }, 70);
 
-                        /* Durur, kahvesini içer */
-                        balonGoster('☕ Mmm... harika kahve!',2800);
-                        var sN=0,sIv=setInterval(function(){
-                          sN+=0.08;
-                          maskot.style.transform='scaleX(1) rotate('+Math.sin(sN)*1.5+'deg)';
-                        },70);
+                      /* 6. Kahve bitti, kalkıyor */
+                      setTimeout(function(){
+                        clearInterval(sIv);
+                        balonGizle();
+                        kahve.style.opacity='0';
+                        sandayle.style.opacity='0';
+                        maskot.style.transform='scaleX(1)';
 
-                        /* 5. Kahve bitti, hadi gidelim */
+                        /* 7. Sola yürür — hava hafifçe kararıyor */
                         setTimeout(function(){
-                          clearInterval(sIv);
-                          balonGizle();
-                          kahve.style.opacity='0';
-                          maskot.style.transform='scaleX(1)';
-                          if(sapka)sapka.classList.add('kalkan');
+                          geceyap(false); // hafif kararma
+                          balonGoster('🚗 Hadi gidelim!', 2000);
 
                           setTimeout(function(){
-                            if(sapka)sapka.classList.remove('kalkan');
-                            balonGoster('🚗 Hadi gidelim!',2000);
+                            balonGizle();
+                            yuru(sw*0.38, 1.0, function(){
 
-                            /* 6. Gece oluyor */
-                            geceyap();
+                              /* 8. Hava tamamen kararıyor */
+                              geceyap(true);
+                              balonGoster('🌙 Akşam oldu...', 2000);
 
-                            /* 7. Biraz daha yürür */
-                            setTimeout(function(){
-                              balonGizle();
-                              yuru(sw*0.55, 1.0, function(){
-
-                                /* 8. Araç geliyor */
+                              /* 9. Araç geliyor */
+                              setTimeout(function(){
+                                balonGizle();
                                 aracWrap.style.opacity='1';aracWrap.style.transition='none';
                                 aracX=-240;aracWrap.style.transform='translateX('+aracX+'px)';
                                 farGuncelle(aracX);
 
                                 setTimeout(function(){
-                                  var arabaHedef=maskotX-70;
-                                  var surGel=3200;
+                                  var arabaHedef=maskotX-72;
+                                  var surGel=3000;
                                   aracWrap.style.transition='transform '+surGel+'ms linear';
                                   aracWrap.style.transform='translateX('+arabaHedef+'px)';
                                   var t0=Date.now();
                                   (function fA(){var f=Math.min((Date.now()-t0)/surGel,1);farGuncelle(-240+(arabaHedef+240)*f);if(f<1)requestAnimationFrame(fA);})();
 
-                                  /* 9. Biner */
+                                  /* 10. Biner */
                                   setTimeout(function(){
                                     aracWrap.style.transition='none';aracX=arabaHedef;
-                                    balonGoster('😎 Ben kullanıyorum!',1800);
+                                    balonGoster('😎 Ben kullanıyorum!', 1800);
                                     setTimeout(function(){
                                       balonGizle();
                                       maskot.style.transition='left 0.7s ease,bottom 0.5s ease';
@@ -1302,28 +1316,30 @@ select.field-input option { background: #fff; }
                                       setTimeout(function(){
                                         dirBaslat();
                                         setTimeout(function(){
-                                          korna();balonGoster('📯 Beep beep!',1400);
-
-                                          /* 10. Gidiyorlar */
+                                          korna();
+                                          balonGoster('📯 Beep beep!', 1400);
+                                          /* 11. Gidiyorlar */
                                           setTimeout(function(){
                                             balonGizle();
-                                            var cikis=-(sw+280),surCik=3000;
+                                            var cikis=-(sw+280), surCik=3000;
                                             aracWrap.style.transition='transform '+surCik+'ms ease-in';
                                             aracWrap.style.transform='translateX('+cikis+'px)';
                                             maskot.style.transition='left '+surCik+'ms ease-in';
                                             maskotX=cikis+26;maskot.style.left=maskotX+'px';
                                             var t1=Date.now(),sx1=aracX;
                                             (function fC(){var f=Math.min((Date.now()-t1)/surCik,1);farGuncelle(sx1+(cikis-sx1)*(f*f));if(f<1)requestAnimationFrame(fC);else farHuz.style.opacity='0';})();
-
-                                            /* 11. Döngü */
+                                            /* 12. Döngü */
                                             setTimeout(function(){
                                               aracWrap.style.opacity='0';aracWrap.style.transition='none';
                                               dirDurdur();
                                               maskot.style.transition='none';maskot.style.bottom='19px';
-                                              maskot.style.transform='scaleX(-1)';maskot.style.opacity='0';
-                                              maskotX=sw+65;maskot.style.left=maskotX+'px';
+                                              maskot.style.transform='scaleX(1)';maskot.style.opacity='0';
+                                              maskotX=sw-DT_W-48;maskot.style.left=maskotX+'px';
                                               gunduzyap();
-                                              setTimeout(senaryo,1000);
+                                              setTimeout(function(){
+                                                maskot.style.opacity='1';
+                                                setTimeout(senaryo,500);
+                                              },800);
                                             },surCik+300);
                                           },1600);
                                         },700);
@@ -1331,18 +1347,18 @@ select.field-input option { background: #fff; }
                                     },450);
                                   },surGel+80);
                                 },100);
-                              });
-                            },2200);
-                          },800);
-                        },3500);
-                      });
-                    },600);
-                  },1800);
+                              },2200);
+                            });
+                          },2200);
+                        },800);
+                      },4000);
+                    },500);
+                  },1600);
                 },1800);
               });
-            });
-          },2800);
-        },800);
+            },2200);
+          },1000);
+        },700);
       }
 
       maskot.addEventListener('click',function(){
@@ -1354,6 +1370,7 @@ select.field-input option { background: #fff; }
       setTimeout(senaryo,800);
     })();
     </script>
+
 
     <div class="filter-bar">
       <input type="text" placeholder="🔍 Plaka, isim veya sıra no ara..." id="searchInput" oninput="renderCardsDebounce()">
