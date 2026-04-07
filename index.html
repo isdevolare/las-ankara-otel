@@ -2049,26 +2049,18 @@ function renderOteleAlinan() {
 }
 
 async function oteleAlinanTeslimEt(id) {
-  onayGoster('Lastiği teslim ettiniz mi?', async function() {
+  onayGoster('Lastiği teslim ettiniz mi?', function() {
     var data = getData();
     var k = data.find(function(d){ return d.id === id; });
     if (!k) return;
-    var prevTeslim = k.teslim;
-    var prevTarih = k.teslimTarihi;
     k.teslim = true;
     k.teslimTarihi = new Date().toLocaleDateString('tr-TR');
-    try {
-      await setData(data);
-    } catch (e) {
-      k.teslim = prevTeslim;
-      k.teslimTarihi = prevTarih;
-      showToast('Bağlantı hatası!', 'error');
-      return;
-    }
+    _cache.otel = data;
     renderOteleAlinan();
     renderCards();
     updateTabCounts();
     showToast('✅ Teslim edildi!', 'success');
+    fsUpdateDoc('otel', k.id, k).catch(function(){ showToast('⚠️ Sunucuya yazılamadı!', 'error'); });
   });
 }
 
@@ -2110,23 +2102,30 @@ async function fsGetDoc(col, docId) {
 }
 // Tüm listeyi tek seferde yazar (eski Realtime DB .set() gibi)
 async function fsSetList(col, arr) {
+  // Sadece değişenleri yaz — tüm koleksiyonu SİLME
   const batch = FS.batch();
-  // Önce mevcut dokümanları sil
-  const old = await FS.collection(col).get();
-  old.docs.forEach(d => batch.delete(d.ref));
-  // Yeni verileri yaz - kayıt id'sini doküman ID'si olarak kullan
-  arr.forEach(function(item, i) {
-    var id = (item.id) ? String(item.id) : (item._id) ? String(item._id) : String(i);
-    var ref = FS.collection(col).doc(id);
+  arr.forEach(function(item) {
+    var id = (item.id) ? String(item.id) : (item._id) ? String(item._id) : null;
+    if (!id) return;
     var clean = Object.assign({}, item);
     delete clean._id;
-    batch.set(ref, clean);
+    batch.set(FS.collection(col).doc(id), clean);
   });
   return batch.commit();
 }
-// Tek doküman yazar (depo_sira için)
+// Tek doküman yazar
 async function fsSetDoc(col, docId, data) {
   return FS.collection(col).doc(docId).set(data);
+}
+// Tek doküman güncelle (optimized - sadece 1 kayıt yaz)
+async function fsUpdateDoc(col, id, data) {
+  var clean = Object.assign({}, data);
+  delete clean._id;
+  return FS.collection(col).doc(String(id)).set(clean);
+}
+// Tek doküman sil
+async function fsDeleteDoc(col, id) {
+  return FS.collection(col).doc(String(id)).delete();
 }
 
 function fbGet(path) {
@@ -2141,100 +2140,56 @@ function fbPatch(path, data) {
   return fbSet(path, data);
 }
 
-// Realtime sync — Firestore onSnapshot (sadece değişen dokümanı çeker)
-function startRealtimeSync() {
-  var collections = ['otel','hurda','deleted','gecici'];
-  collections.forEach(function(col) {
-    var unsub = FS.collection(col).onSnapshot(function(snap) {
-      _cache[col] = snap.docs.map(function(d){ return Object.assign({ _id: d.id }, d.data()); }).filter(Boolean);
-      if (col === 'otel') _cache.otel = _cache.otel.map(function(k){ return Object.assign({}, k, {tip: k.tip || inferTipFromDonem(k.donem)}); });
-      if (_fbReady) refreshAll();
-    });
-    _listeners.push(unsub);
-  });
-  // depo_sira ayrı koleksiyonda tek doküman
-  var unsubDepo = FS.collection('meta').doc('depo_sira').onSnapshot(function(snap) {
-    _cache.depo_sira = snap.exists ? snap.data() : {};
-    if (_fbReady) refreshAll();
-  });
-  _listeners.push(unsubDepo);
-}
+// Realtime sync — sadece otel koleksiyonu loadAllFromFirebase içinde dinleniyor
 
-// İlk yükleme — optimize: localStorage önce, Firestore minimum okuma
+// İlk yükleme
 function loadAllFromFirebase() {
   return new Promise(function(resolve) {
-    _fbReady = false;
-
-    // 1. localStorage'dan anında yükle (0 Firestore okuma)
-    try {
-      var lc = localStorage.getItem('lc_otel');
-      if (lc) { _cache.otel = JSON.parse(lc).map(function(k){ return Object.assign({}, k, {tip: k.tip || inferTipFromDonem(k.donem)}); }); }
-      var lh = localStorage.getItem('lc_hurda');
-      if (lh) _cache.hurda = JSON.parse(lh);
-      var ld = localStorage.getItem('lc_deleted');
-      if (ld) _cache.deleted = JSON.parse(ld);
-    } catch(e) {}
-
-    // Aktif dönem
-    var savedDonem = localStorage.getItem('aktif_donem');
-    if (savedDonem) {
-      _aktifDonem = savedDonem;
-      var lbl = document.getElementById('aktifDonemLabel');
-      if (lbl) lbl.textContent = _aktifDonem;
+    var loaded = { otel: false, hurda: false, deleted: false, depo_sira: false, gecici: false };
+    function checkDone() {
+      if (Object.values(loaded).every(Boolean)) {
+        _fbReady = true;
+        resolve();
+      }
     }
-
-    // 2. Sadece otel koleksiyonunu realtime dinle (değişince cache günceller)
-    // onSnapshot ilk tetiklenişte tüm veriyi çeker — bu tek Firestore okuma
-    var unsubOtel = FS.collection('otel').onSnapshot(function(snap) {
-      _cache.otel = snap.docs.map(function(d){
-        var data = d.data();
-        return Object.assign({}, data, {tip: data.tip || inferTipFromDonem(data.donem)});
-      }).filter(Boolean);
-      try { localStorage.setItem('lc_otel', JSON.stringify(_cache.otel)); } catch(e) {}
-      if (_fbReady) { renderCards(); renderOteleAlinan(); updateTabCounts(); }
-    }, function(err) { console.warn('otel snapshot error:', err); });
-    _listeners.push(unsubOtel);
-
-    // 3. depo_sira — tek doküman, bir kez oku
-    fsGetDoc('meta', 'depo_sira').then(function(data) {
-      _cache.depo_sira = data || {};
-    }).catch(function(){});
-
-    // 4. ayarlar — tek doküman, bir kez oku
+    // Aktif dönemi Firestore'dan yükle
     fsGetDoc('meta', 'ayarlar').then(function(ayarlar) {
       if (ayarlar && ayarlar.aktifDonem) {
         _aktifDonem = ayarlar.aktifDonem;
         localStorage.setItem('aktif_donem', _aktifDonem);
-        var lbl = document.getElementById('aktifDonemLabel');
-        if (lbl) lbl.textContent = _aktifDonem;
       }
+      var lbl = document.getElementById('aktifDonemLabel');
+      if (lbl) lbl.textContent = _aktifDonem;
     }).catch(function(){});
-
-    // 5. hurda, deleted, gecici — localStorage yoksa bir kez oku, sonra cache'den
-    var needHurda = !_cache.hurda || _cache.hurda.length === 0;
-    var needDeleted = !_cache.deleted || _cache.deleted.length === 0;
-
-    if (needHurda) {
-      fsGetList('hurda').then(function(list) {
-        _cache.hurda = list;
-        try { localStorage.setItem('lc_hurda', JSON.stringify(list)); } catch(e) {}
-      }).catch(function(){});
-    }
-    if (needDeleted) {
-      fsGetList('deleted').then(function(list) {
-        _cache.deleted = list;
-        try { localStorage.setItem('lc_deleted', JSON.stringify(list)); } catch(e) {}
-      }).catch(function(){});
-    }
+    fsGetList('otel').then(function(list) {
+      _cache.otel = list.map(function(k){ return Object.assign({}, k, {tip: k.tip || inferTipFromDonem(k.donem)}); });
+      try { localStorage.setItem('lc_otel', JSON.stringify(_cache.otel)); } catch(e) {}
+      loaded.otel = true;
+      renderOteleAlinan(); renderCards(); updateTabCounts();
+      checkDone();
+    });
+    fsGetList('hurda').then(function(list) {
+      _cache.hurda = list;
+      try { localStorage.setItem('lc_hurda', JSON.stringify(_cache.hurda)); } catch(e) {}
+      loaded.hurda = true;
+      checkDone();
+    });
+    fsGetList('deleted').then(function(list) {
+      _cache.deleted = list;
+      try { localStorage.setItem('lc_deleted', JSON.stringify(_cache.deleted)); } catch(e) {}
+      loaded.deleted = true;
+      checkDone();
+    });
+    fsGetDoc('meta', 'depo_sira').then(function(data) {
+      _cache.depo_sira = data || {};
+      loaded.depo_sira = true;
+      checkDone();
+    });
     fsGetList('gecici').then(function(list) {
       _cache.gecici = list;
-    }).catch(function(){});
-
-    // 6. Kısa süre sonra hazır say — onSnapshot henüz gelmediyse localStorage veriyle devam
-    setTimeout(function() {
-      _fbReady = true;
-      resolve();
-    }, 800);
+      loaded.gecici = true;
+      checkDone();
+    });
   });
 }
 
@@ -2531,11 +2486,12 @@ async function saveKayit() {
     };
     const geciciData = getGecici();
     geciciData.unshift(geciciItem);
-    await setGecici(geciciData);
+    _cache.gecici = geciciData;
     clearForm();
     refreshAll();
     showToast('✅ Gecici Depoya kaydedildi!', 'success');
     showPage('form', document.getElementById('ntab-form'));
+    fsUpdateDoc('gecici', geciciItem.id, geciciItem).catch(function(){});
     return;
   }
   if (telRaw && !tel) { showToast('Telefon numarası formatı hatalı', 'error'); return; }
@@ -2562,11 +2518,13 @@ async function saveKayit() {
     });
     addHistory(item, 'Kayıt düzenlendi');
     if (oldSira !== sira) addHistory(item, `Sıra no güncellendi: ${oldSira || '—'} → ${sira || '—'}`);
-    await setData(data);
+    _cache.otel = data;
+    try { localStorage.setItem('lc_otel', JSON.stringify(data)); } catch(e) {}
     clearForm();
     refreshAll();
     showToast('✅ Kayıt güncellendi!', 'success');
     showPage('otel', document.getElementById('ntab-otel'));
+    fsUpdateDoc('otel', item.id, item).catch(function(){ showToast('⚠️ Sunucuya yazılamadı!', 'error'); });
     return;
   }
 
@@ -2594,13 +2552,8 @@ async function saveKayit() {
   addHistory(item, 'Kayıt oluşturuldu');
   if (sira) addHistory(item, `Sıra no atandı: ${sira}`);
   data.push(item);
-  try {
-    await setData(data);
-  } catch (e) {
-    data.pop();
-    showToast('Bağlantı hatası!', 'error');
-    return;
-  }
+  _cache.otel = data;
+  try { localStorage.setItem('lc_otel', JSON.stringify(data)); } catch(e) {}
   clearForm();
   renderOteleAlinan();
   renderCards();
@@ -2610,6 +2563,7 @@ async function saveKayit() {
     var listEl = document.getElementById('oteleAlinanList');
     if (listEl) listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 200);
+  fsUpdateDoc('otel', item.id, item).catch(function(){ showToast('⚠️ Sunucuya yazılamadı!', 'error'); });
 }
 function clearForm() {
   ['f_ad','f_soyad','f_plaka','f_ebat','f_marka','f_uretim','f_not','f_tel','f_sira','f_edit_id'].forEach(id => { var el = document.getElementById(id); if(el) el.value=''; });
@@ -2895,57 +2849,33 @@ function renderCards() {
 async function toggle(id, field) {
   const data = getData();
   const k = data.find(d=>d.id===id); if(!k) return;
-  const prevVal = k[field];
-  k[field] = !prevVal;
+  k[field] = !k[field];
 
   if (field === 'montaj') {
     addHistory(k, k.montaj ? 'Montaj tamamlandı' : 'Montaj bekliyor');
-    try {
-      await setData(data);
-    } catch (e) {
-      k[field] = prevVal;
-      popLastHistoryEntry(k);
-      showToast('Bağlantı hatası!', 'error');
-      return;
-    }
+    _cache.otel = data;
     renderCards(); renderMontajTamam(); renderOteleAlinan(); updateTabCounts();
-    if (k.montaj) {
-      showPage('montaj', document.getElementById('ntab-montaj'));
-      showToast('✅ Montaj tamamlandı!', 'success');
-    } else {
-      showPage('otel', document.getElementById('ntab-otel'));
-      showToast('Montaj bekleniyor', 'success');
-    }
+    if (k.montaj) { showPage('montaj', document.getElementById('ntab-montaj')); showToast('✅ Montaj tamamlandı!', 'success'); }
+    else { showPage('otel', document.getElementById('ntab-otel')); showToast('Montaj bekleniyor', 'success'); }
+    fsUpdateDoc('otel', k.id, k).catch(function(){ showToast('⚠️ Sunucuya yazılamadı!', 'error'); });
     return;
   }
 
   if (field === 'teslim' && k.teslim) {
     addHistory(k, 'Teslim edildi');
-    try {
-      await setData(data);
-    } catch (e) {
-      k[field] = prevVal;
-      popLastHistoryEntry(k);
-      showToast('Bağlantı hatası!', 'error');
-      return;
-    }
+    _cache.otel = data;
     renderCards(); renderMontajTamam(); renderOteleAlinan(); renderArsiv(); updateTabCounts();
     showPage('arsiv', document.getElementById('ntab-arsiv'));
     showToast('✅ Teslim edildi!', 'success');
+    fsUpdateDoc('otel', k.id, k).catch(function(){ showToast('⚠️ Sunucuya yazılamadı!', 'error'); });
     return;
   }
 
   addHistory(k, 'Teslim durumu geri alındı');
-  try {
-    await setData(data);
-  } catch (e) {
-    k[field] = prevVal;
-    popLastHistoryEntry(k);
-    showToast('Bağlantı hatası!', 'error');
-    return;
-  }
+  _cache.otel = data;
   renderCards(); renderOteleAlinan(); renderArsiv(); updateTabCounts();
   showToast('Kayıt otele döndü', 'success');
+  fsUpdateDoc('otel', k.id, k).catch(function(){ showToast('⚠️ Sunucuya yazılamadı!', 'error'); });
 }
 
 async function markAsGelmeyen(id) {
@@ -2960,19 +2890,11 @@ async function markAsGelmeyen(id) {
   k.gelmedi = true;
   k.gelmediAt = nowTR();
   addHistory(k, 'Müşteri gelmedi olarak işaretlendi');
-  try {
-    await setData(data);
-  } catch (e) {
-    k.gelmedi = prevGelmedi;
-    if (prevAt !== undefined) k.gelmediAt = prevAt;
-    else delete k.gelmediAt;
-    popLastHistoryEntry(k);
-    showToast('Bağlantı hatası!', 'error');
-    return;
-  }
+  _cache.otel = data;
   renderCards(); renderOteleAlinan(); renderGelmeyen(); updateTabCounts();
   showPage('gelmeyen', document.getElementById('ntab-gelmeyen'));
   showToast('⏰ Gelmeyen müşterilere taşındı', 'success');
+  fsUpdateDoc('otel', k.id, k).catch(function(){ showToast('⚠️ Sunucuya yazılamadı!', 'error'); });
 }
 
 async function unmarkAsGelmeyen(id) {
@@ -2983,19 +2905,11 @@ async function unmarkAsGelmeyen(id) {
   k.gelmedi = false;
   delete k.gelmediAt;
   addHistory(k, 'Müşteri tekrar aktif otele alındı');
-  try {
-    await setData(data);
-  } catch (e) {
-    k.gelmedi = prevGelmedi;
-    if (prevAt !== undefined) k.gelmediAt = prevAt;
-    else delete k.gelmediAt;
-    popLastHistoryEntry(k);
-    showToast('Bağlantı hatası!', 'error');
-    return;
-  }
+  _cache.otel = data;
   refreshAll();
   showPage('otel', document.getElementById('ntab-otel'));
   showToast('✅ Kayıt tekrar otel lastiklerine alındı', 'success');
+  fsUpdateDoc('otel', k.id, k).catch(function(){ showToast('⚠️ Sunucuya yazılamadı!', 'error'); });
 }
 
 function renderMontajTamam() {
@@ -3134,15 +3048,13 @@ async function restoreDeleted(id) {
   let data = getData();
   data = data.filter(k => k.id !== id);
   data.unshift(item);
-  try {
-    await setData(data);
-    await setDeleted(deleted);
-  } catch (e) {
-    showToast('Bağlantı hatası!', 'error');
-    return;
-  }
+  _cache.otel = data;
+  _cache.deleted = deleted;
+  try { localStorage.setItem('lc_otel', JSON.stringify(data)); } catch(e) {}
   refreshAll();
   showToast('↩️ Kayıt geri yüklendi', 'success');
+  fsUpdateDoc('otel', item.id, item).catch(function(){});
+  fsDeleteDoc('deleted', id).catch(function(){});
 }
 
 async function permanentDeleteDeleted(id) {
@@ -3151,14 +3063,11 @@ async function permanentDeleteDeleted(id) {
   const mesaj = item ? `${item.plaka} · ${item.isim} kaydı kalıcı silinsin mi?` : 'Kayıt kalıcı silinsin mi?';
   if (!confirm(mesaj)) return;
   const yeni = deleted.filter(k => k.id !== id);
-  try {
-    await setDeleted(yeni);
-    renderDeleted();
-    updateTabCounts();
-    showToast('❌ Kayıt kalıcı silindi', 'success');
-  } catch (e) {
-    showToast('Bağlantı hatası!', 'error');
-  }
+  _cache.deleted = yeni;
+  renderDeleted();
+  updateTabCounts();
+  showToast('❌ Kayıt kalıcı silindi', 'success');
+  fsDeleteDoc('deleted', id).catch(function(){});
 }
 
 // ── DETAIL MODAL ──
@@ -3351,20 +3260,12 @@ async function montajTamamla() {
   k.hizmetler = [...geciciHizmetler];
   k.hizmetToplam = geciciHizmetler.reduce((s, h) => s + (h.fiyat || 0), 0);
   addHistory(k, `Montaj tamamlandı. Hizmetler: ${geciciHizmetler.map(h=>h.ad+'(₺'+h.fiyat+')').join(', ')||'—'} | Toplam: ₺${k.hizmetToplam}`);
-  try {
-    await setData(data);
-  } catch (e) {
-    k.montaj = prevMontaj;
-    k.hizmetler = prevHizmetler;
-    k.hizmetToplam = prevToplam;
-    popLastHistoryEntry(k);
-    showToast('Bağlantı hatası!', 'error');
-    return;
-  }
+  _cache.otel = data;
   closeHizmetModal();
   refreshAll();
   showPage('montaj', document.getElementById('ntab-montaj'));
   showToast('✅ Montaj tamamlandı!', 'success');
+  fsUpdateDoc('otel', k.id, k).catch(function(){ showToast('⚠️ Sunucuya yazılamadı!', 'error'); });
 }
 
 // Hizmet raporu
@@ -3468,11 +3369,13 @@ async function saveGecici() {
   };
   const data = getGecici();
   data.unshift(item);
-  await setGecici(data);
+  var yeniGeciciKayit = item;
+  _cache.gecici = data;
   ['gc_isim','gc_tel','gc_ebat','gc_not'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('gc_adet').value = '4';
   renderGecici();
   showToast('✅ Geçici lastik kaydedildi!', 'success');
+  if (yeniGeciciKayit) fsUpdateDoc('gecici', yeniGeciciKayit.id, yeniGeciciKayit).catch(function(){});
 }
 
 async function geciciTeslimEt(id) {
@@ -3481,16 +3384,19 @@ async function geciciTeslimEt(id) {
   if (!item) return;
   item.teslimEdildi = true;
   item.teslimTarih = new Date().toLocaleDateString('tr-TR');
-  await setGecici(data);
+  _cache.gecici = data;
   renderGecici();
   showToast('✅ Teslim edildi olarak işaretlendi', 'success');
+  fsUpdateDoc('gecici', item.id, item).catch(function(){});
 }
 
 async function geciciSil(id) {
   
-  await setGecici(getGecici().filter(k => k.id !== id));
+  var newGecici = getGecici().filter(k => k.id !== id);
+  _cache.gecici = newGecici;
   renderGecici();
   showToast('🗑️ Kayıt silindi', 'success');
+  fsDeleteDoc('gecici', id).catch(function(){});
 }
 
 function renderGecici() {
@@ -3547,21 +3453,21 @@ function deleteKayit(id) {
   var data = getData();
   var item = data.find(function(k){ return k.id === id; });
   if (!item) return;
-  onayGoster(item.plaka + ' · ' + item.isim + ' silinsin mi?', async function() {
-    try {
-      var data2 = getData();
-      var item2 = data2.find(function(k){ return k.id === id; });
-      if (!item2) return;
-      var newOtel = data2.filter(function(k){ return k.id !== id; });
-      var deleted = getDeleted().filter(function(k){ return k.id !== id; });
-      deleted.unshift(Object.assign({}, item2, {deletedAt: nowTR()}));
-      await setData(newOtel);
-      await setDeleted(deleted);
-      refreshAll();
-      showToast('🗑️ Silindi', 'success');
-    } catch (e) {
-      showToast('Bağlantı hatası!', 'error');
-    }
+  onayGoster(item.plaka + ' · ' + item.isim + ' silinsin mi?', function() {
+    var data2 = getData();
+    var item2 = data2.find(function(k){ return k.id === id; });
+    if (!item2) return;
+    var newOtel = data2.filter(function(k){ return k.id !== id; });
+    var deletedItem = Object.assign({}, item2, {deletedAt: nowTR()});
+    var deleted = getDeleted().filter(function(k){ return k.id !== id; });
+    deleted.unshift(deletedItem);
+    _cache.otel = newOtel;
+    _cache.deleted = deleted;
+    try { localStorage.setItem('lc_otel', JSON.stringify(newOtel)); } catch(e) {}
+    refreshAll();
+    showToast('🗑️ Silindi', 'success');
+    fsDeleteDoc('otel', id).catch(function(){});
+    fsUpdateDoc('deleted', deletedItem.id, deletedItem).catch(function(){});
   }, '🗑️ Sil', '#cc0000');
 }
 function quickDeleteKayit(id, event) {
@@ -3708,11 +3614,14 @@ async function depoEkle() {
     // Mevcut kayda sıra ata
     kayit.sira = sira;
     addHistory(kayit, `Depo sayımına eklendi: Sıra ${sira}`);
-    await setData(kayitlar);
+    _cache.otel = kayitlar;
+    try { localStorage.setItem('lc_otel', JSON.stringify(kayitlar)); } catch(e) {}
     siralar[temizPlaka] = sira;
-    await setDepoSiralar(siralar);
+    _cache.depo_sira = siralar;
     msg.style.color = '#1a8a3a';
     msg.textContent = `✅ ${sira} → ${plaka} eklendi! (${kayit.isim}) — Montaj Bekleyenler'e düştü`;
+    fsUpdateDoc('otel', kayit.id, kayit).catch(function(){});
+    fsSetDoc('meta', 'depo_sira', siralar).catch(function(){});
   } else {
     // Kayıt yok → otomatik oluştur, montaj bekleyenlere düşsün
     const yeniKayit = {
@@ -3731,11 +3640,14 @@ async function depoEkle() {
       history: [{ at: nowTR(), text: `Depo sayımından eklendi: Sıra ${sira}` }]
     };
     kayitlar.push(yeniKayit);
-    await setData(kayitlar);
+    _cache.otel = kayitlar;
+    try { localStorage.setItem('lc_otel', JSON.stringify(kayitlar)); } catch(e) {}
     siralar[temizPlaka] = sira;
-    await setDepoSiralar(siralar);
+    _cache.depo_sira = siralar;
     msg.style.color = '#1a6aaa';
     msg.textContent = `✅ ${sira} → ${plaka} eklendi! (Yeni kayıt oluşturuldu — Detayları düzenleyin)`;
+    fsUpdateDoc('otel', yeniKayit.id, yeniKayit).catch(function(){});
+    fsSetDoc('meta', 'depo_sira', siralar).catch(function(){});
   }
 
   document.getElementById('depoSiraInput').value = '';
@@ -3866,8 +3778,11 @@ async function removeDepoSira(id, event) {
     delete siralar[cleanPlaka];
     kayit.sira = '';
     addHistory(kayit, 'Depo sıra no silindi');
-    await setData(kayitlar);
-    await setDepoSiralar(siralar);
+    _cache.otel = kayitlar;
+    _cache.depo_sira = siralar;
+    try { localStorage.setItem('lc_otel', JSON.stringify(kayitlar)); } catch(e) {}
+    fsUpdateDoc('otel', kayit.id, kayit).catch(function(){});
+    fsSetDoc('meta', 'depo_sira', siralar).catch(function(){});
   }
   refreshAll();
   showToast('🗑️ Depo sıra kaydı silindi', 'success');
@@ -3893,13 +3808,9 @@ async function saveHurda() {
     fotolar: kayitFotolar,
     tarih: new Date().toLocaleDateString('tr-TR')
   });
-  try {
-    await setHurda(data);
-  } catch (e) {
-    data.pop();
-    showToast('Bağlantı hatası!', 'error');
-    return;
-  }
+  var yeniHurda = data[data.length-1];
+  _cache.hurda = data;
+  try { localStorage.setItem('lc_hurda', JSON.stringify(data)); } catch(e) {}
   ['h_ebat','h_marka','h_not','h_dis','h_fiyat'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('h_donem').value = 'Kış';
   document.getElementById('h_adet').value = '4';
@@ -3909,6 +3820,7 @@ async function saveHurda() {
   hurdaFotolar = [];
   renderHurda();
   showToast('✅ Çıkma lastik eklendi!', 'success');
+  if (yeniHurda) fsUpdateDoc('hurda', yeniHurda.id, yeniHurda).catch(function(){});
 }
 
 let hurdaSatilanGoster = false;
@@ -4003,14 +3915,13 @@ function renderSatilan() {
 
 async function deleteHurda(id) {
   onayGoster('Bu çıkma lastik kaydı silinecek. Emin misiniz?', async function() {
-    try {
-      await setHurda(getHurda().filter(d=>d.id!==id));
-      closeHurdaModal();
-      renderHurda();
-      showToast('Cikma lastik silindi', 'success');
-    } catch (e) {
-      showToast('Bağlantı hatası!', 'error');
-    }
+    var yeniHurda = getHurda().filter(d=>d.id!==id);
+    _cache.hurda = yeniHurda;
+    try { localStorage.setItem('lc_hurda', JSON.stringify(yeniHurda)); } catch(e) {}
+    closeHurdaModal();
+    renderHurda();
+    showToast('Cikma lastik silindi', 'success');
+    fsDeleteDoc('hurda', id).catch(function(){});
   });
 }
 
@@ -4163,16 +4074,12 @@ async function toggleHurdaDurum(id) {
   if (!h) return;
   const prevDurum = h.durum;
   h.durum = h.durum === 'satildi' ? 'beklemede' : 'satildi';
-  try {
-    await setHurda(data);
-  } catch (e) {
-    h.durum = prevDurum;
-    showToast('Bağlantı hatası!', 'error');
-    return;
-  }
+  _cache.hurda = data;
+  try { localStorage.setItem('lc_hurda', JSON.stringify(data)); } catch(e) {}
   closeHurdaModal();
   renderHurda();
   showToast(h.durum === 'satildi' ? '✅ Satıldı olarak işaretlendi' : '⏳ Beklemede olarak işaretlendi', 'success');
+  fsUpdateDoc('hurda', h.id, h).catch(function(){ showToast('⚠️ Sunucuya yazılamadı!', 'error'); });
 }
 
 function closeHurdaModal() {
