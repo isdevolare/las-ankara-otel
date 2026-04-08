@@ -2612,7 +2612,11 @@ async function saveKayit() {
     showToast('✅ Kayıt güncellendi!', 'success');
     showPage('otel', document.getElementById('ntab-otel'));
     // Sadece bu kaydı yaz
-    fsUpdateDoc('otel', item.id, item).catch(function(){ showToast('⚠️ Kayıt sunucuya yazılamadı!', 'error'); });
+    fsUpdateDoc('otel', item.id, item).catch(function(err){ 
+    const msg = err?.message || JSON.stringify(err) || String(err);
+    showToast('⚠️ Kayıt sunucuya yazılamadı!', 'error');
+    alert('⚠️ HATA:\n\n' + msg);
+  });
     return;
   }
 
