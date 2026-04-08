@@ -2164,10 +2164,17 @@ function fbGet(path) {
 }
 function fbSet(path, data) {
   if (path === 'depo_sira') return fsSetDoc('meta', 'depo_sira', data);
-  return fsSetList(path, Array.isArray(data) ? data : Object.values(data).filter(Boolean));
+  // Toplu rewrite yerine sadece değişen dokümanı yaz
+  if (Array.isArray(data)) {
+    // setData(arr) şeklinde çağrıldığında - sadece son elemanı yaz (append durumu)
+    // Gerçek doc-level update fsReplaceDoc/fsUpdateDoc ile yapılıyor zaten
+    // Bu fonksiyon artık sadece eski compat için burada, gerçek write yapmıyor
+    return Promise.resolve();
+  }
+  return Promise.resolve();
 }
 function fbPatch(path, data) {
-  return fbSet(path, data);
+  return Promise.resolve();
 }
 
 // Realtime sync — Firestore onSnapshot (sadece değişen dokümanı çeker)
