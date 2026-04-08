@@ -2191,17 +2191,17 @@ function fbGet(path) {
 }
 function fbSet(path, data) {
   if (path === 'depo_sira') return fsSetDoc('meta', 'depo_sira', data);
-  // Toplu rewrite yerine sadece değişen dokümanı yaz
-  if (Array.isArray(data)) {
-    // setData(arr) şeklinde çağrıldığında - sadece son elemanı yaz (append durumu)
-    // Gerçek doc-level update fsReplaceDoc/fsUpdateDoc ile yapılıyor zaten
-    // Bu fonksiyon artık sadece eski compat için burada, gerçek write yapmıyor
-    return Promise.resolve();
-  }
-  return Promise.resolve();
+  if (!Array.isArray(data)) return Promise.resolve();
+  // Her dokümanı tek tek yaz (batch yerine)
+  var promises = data.map(function(item) {
+    var id = item.id || item._id;
+    if (!id) return Promise.resolve();
+    return fsReplaceDoc(path, String(id), item);
+  });
+  return Promise.all(promises);
 }
 function fbPatch(path, data) {
-  return Promise.resolve();
+  return fbSet(path, data);
 }
 
 // Realtime sync — Firestore onSnapshot (sadece değişen dokümanı çeker)
