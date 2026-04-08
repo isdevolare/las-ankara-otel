@@ -1904,7 +1904,7 @@ async function setAktifDonem(donem) {
   showToast('✅ Aktif dönem: ' + donem, 'success');
 }
 const DONEM_ORDER = ['2026 Yaz','2026 Kış','2027 Yaz','2027 Kış','2028 Yaz','2028 Kış'];
-const DONEM_OPTIONS = ['2026 Yaz','2026 Kış','2027 Yaz','2027 Kış','2028 Yaz','2028 Kış','Belirsiz','Geçici Depo'];
+const DONEM_OPTIONS = ['2026 Kış','2027 Yaz','2027 Kış','2028 Yaz','2028 Kış','Belirsiz','Geçici Depo'];
 
 function donemIndex(donem='') {
   const idx = DONEM_ORDER.indexOf(donem);
@@ -2665,7 +2665,7 @@ function clearForm() {
   ['f_ad','f_soyad','f_plaka','f_ebat','f_marka','f_uretim','f_not','f_tel','f_sira','f_edit_id'].forEach(id => { var el = document.getElementById(id); if(el) el.value=''; });
   document.getElementById('f_adet').value = '4';
   document.getElementById('f_tip').value = 'Yazlık';
-  document.getElementById('f_donem').value = '2026 Yaz';
+  document.getElementById('f_donem').value = '2026 Kış';
   photoB64.form = '';
   photoB64.formExtra = [];
   var prev = document.getElementById('formPhotoPreview');
