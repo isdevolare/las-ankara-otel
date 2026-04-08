@@ -2695,9 +2695,12 @@ function editKayit(id) {
   document.getElementById('f_sira').value = item.sira || '';
   document.getElementById('f_not').value = item.not || '';
   document.getElementById('f_uretim').value = item.uretim || '';
-  photoB64.form = item.foto || '';
+  var mevcutFotolar = (item.fotolar && item.fotolar.length) ? item.fotolar : (item.foto ? [item.foto] : []);
+  photoB64.form = mevcutFotolar[0] || '';
+  photoB64.formExtra = mevcutFotolar.slice(1);
   const prev = document.getElementById('formPhotoPreview');
-  if (item.foto) { prev.src = item.foto; prev.style.display = 'block'; } else { prev.style.display = 'none'; }
+  if (mevcutFotolar[0]) { prev.src = mevcutFotolar[0]; prev.style.display = 'block'; } else { prev.style.display = 'none'; }
+  renderFormPhotoPreviews();
   document.getElementById('saveKayitBtn').innerHTML = '💾 Güncelle';
   showPage('form', document.getElementById('ntab-form'));
   closeModal();
