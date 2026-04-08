@@ -44,6 +44,12 @@
     .uyari-baslik { font-size: 12px; font-weight: 700; color: #e67e00; margin-bottom: 6px; }
     .uyari-text { font-size: 12px; color: #666; line-height: 1.5; }
     .merkez { font-size: 11px; color: #bbb; text-align: center; margin-top: 4px; }
+    .maps-btn { display: flex; align-items: center; gap: 14px; background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%); border-radius: 12px; padding: 14px 18px; margin-bottom: 14px; text-decoration: none; box-shadow: 0 4px 12px rgba(26,115,232,0.3); }
+    .maps-pin { width: 42px; height: 42px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+    .maps-info { flex: 1; }
+    .maps-name { font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 2px; }
+    .maps-adres { font-size: 11px; color: rgba(255,255,255,0.75); }
+    .maps-arrow { font-size: 20px; color: rgba(255,255,255,0.8); }
     .footer { padding: 16px 20px; background: #f8f8f8; border-top: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; }
     .footer-logo { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 13px; color: #111; }
     .footer-sub { font-size: 10px; color: #aaa; letter-spacing: 0.1em; }
@@ -129,6 +135,11 @@
           '<div><div class="plaka-label">Araç Plakası</div><div class="plaka">' + (k.plaka || '-') + '</div></div>' +
           '<div><div class="tarih-label">Tarih</div><div class="tarih">' + (k.tarih || '-') + '</div></div>' +
         '</div>' +
+        '<a href="https://www.google.com/maps/place/LAS+ANKARA+LAST%C4%B0K+VE+SERV%C4%B0S+H%C4%B0ZMETLER%C4%B0/@39.9735289,32.6567063,17z/data=!4m6!3m5!1s0x14d337a2011668f3:0xaf741d839bca6551" target="_blank" class="maps-btn">' +
+          '<div class="maps-pin">📍</div>' +
+          '<div class="maps-info"><div class="maps-name">LAS ANKARA</div><div class="maps-adres">Etimesgut, Ankara · Yol tarifi al</div></div>' +
+          '<div class="maps-arrow">›</div>' +
+        '</a>' +
         '<div class="musteri-box">' +
           '<div class="musteri-label">Müşteri</div>' +
           '<div class="musteri-isim">' + (k.isim || '-') + '</div>' +
