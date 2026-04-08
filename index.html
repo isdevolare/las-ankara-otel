@@ -15,6 +15,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -2092,6 +2093,24 @@ if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
 const FB_AUTH = firebase.auth();
 const FS = firebase.firestore();
 
+// ── STORAGE UPLOAD ──
+async function uploadFotoToStorage(dataUrl, klasor) {
+  if (!dataUrl) return "";
+  if (dataUrl.startsWith("http")) return dataUrl;
+  klasor = klasor || "otel";
+  var ext = dataUrl.startsWith("data:image/png") ? "png" : "jpg";
+  var dosyaAdi = klasor + "/" + Date.now() + "_" + Math.random().toString(36).slice(2,8) + "." + ext;
+  var ref = FB_STORAGE.ref().child(dosyaAdi);
+  var res = await fetch(dataUrl);
+  var blob = await res.blob();
+  await ref.put(blob);
+  return await ref.getDownloadURL();
+}
+async function uploadCokluFotoToStorage(fotolar, klasor) {
+  if (!fotolar || fotolar.length === 0) return [];
+  var sonuclar = await Promise.all(fotolar.map(function(f) { return uploadFotoToStorage(f, klasor); }));
+  return sonuclar.filter(Boolean);
+}const FB_STORAGE = firebase.storage();
 // In-memory cache
 let _cache = { otel: [], hurda: [], deleted: [], depo_sira: {}, gecici: [] };
 let _fbReady = false;
@@ -2540,9 +2559,16 @@ async function saveKayit() {
       tel,
       not: document.getElementById('f_not').value.trim(),
       sira,
-      foto: photoB64.form || item.foto || '',
-      fotolar: photoB64.form ? [photoB64.form].concat(photoB64.formExtra || []) : (item.fotolar || [])
+      foto: item.foto || '',
+      fotolar: item.fotolar || []
     });
+    // Storage upload
+    if (photoB64.form && photoB64.form.startsWith('data:')) {
+      var editFotolar = [photoB64.form].concat(photoB64.formExtra || []);
+      try { editFotolar = await uploadCokluFotoToStorage(editFotolar, 'otel'); } catch(e) {}
+      item.foto = editFotolar[0] || item.foto || '';
+      item.fotolar = editFotolar;
+    }
     addHistory(item, 'Kayıt düzenlendi');
     if (oldSira !== sira) addHistory(item, `Sıra no güncellendi: ${oldSira || '—'} → ${sira || '—'}`);
     _cache.otel = data;
@@ -2568,8 +2594,8 @@ async function saveKayit() {
     tel,
     not: document.getElementById('f_not').value.trim(),
     sira,
-    foto: photoB64.form || '',
-    fotolar: photoB64.form ? [photoB64.form].concat(photoB64.formExtra || []) : [],
+    foto: '',
+    fotolar: [],
     tarih: new Date().toLocaleDateString('tr-TR'),
     montaj: false,
     teslim: false,
@@ -2591,6 +2617,13 @@ async function saveKayit() {
     var listEl = document.getElementById('oteleAlinanList');
     if (listEl) listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 200);
+  // Fotoğrafları Storage'a yükle
+  if (photoB64.form && photoB64.form.startsWith('data:')) {
+    var yeniFotolar = [photoB64.form].concat(photoB64.formExtra || []);
+    try { yeniFotolar = await uploadCokluFotoToStorage(yeniFotolar, 'otel'); } catch(e) {}
+    item.foto = yeniFotolar[0] || '';
+    item.fotolar = yeniFotolar;
+  }
   // Sadece yeni kaydı Firestore'a yaz
   fsUpdateDoc('otel', item.id, item).catch(function(){ showToast('⚠️ Kayıt sunucuya yazılamadı!', 'error'); });
 }
@@ -3838,7 +3871,10 @@ async function saveHurda() {
   const fiyat = document.getElementById('h_fiyat').value.trim();
   const durum = 'beklemede'; // Yeni eklenenler hep beklemede başlar
   if (!ebat || !marka) { showToast('Ebat ve marka zorunlu!', 'error'); return; }
-  const kayitFotolar = [...hurdaFotolar];
+  var kayitFotolar = [...hurdaFotolar];
+  if (kayitFotolar.length > 0) {
+    try { kayitFotolar = await uploadCokluFotoToStorage(kayitFotolar, 'hurda'); } catch(e) {}
+  }
   const data = getHurda();
   data.push({
     id: Date.now().toString(),
