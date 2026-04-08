@@ -15,7 +15,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -2104,7 +2103,6 @@ const firebaseConfig = {
 if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
 const FB_AUTH = firebase.auth();
 const FS = firebase.firestore();
-const FB_STORAGE = firebase.storage();
 
 // ── FOTO COMPRESS ──
 async function compressPhoto(dataUrl, maxWidth, quality) {
@@ -2136,396 +2134,6 @@ async function compressCokluFoto(arr) {
   return sonuc;
 }
 
-// ── FIREBASE STORAGE — Foto Upload ──
-var _dbOverlayDepth = 0;
-
-async function uploadFotoToStorage(base64DataUrl, klasor, dosyaAdi) {
-  if (!base64DataUrl || !base64DataUrl.startsWith('data:')) return base64DataUrl;
-  try {
-    // base64'ü blob'a çevir
-    var arr = base64DataUrl.split(',');
-    var mime = arr[0].match(/:(.*?);/)[1];
-    var bstr = atob(arr[1]);
-    var n = bstr.length;
-    var u8arr = new Uint8Array(n);
-    while (n--) u8arr[n] = bstr.charCodeAt(n);
-    var blob = new Blob([u8arr], { type: mime });
-
-    // Storage'a yükle
-    var ext = mime.split('/')[1] || 'jpg';
-    var yol = klasor + '/' + dosyaAdi + '_' + Date.now() + '.' + ext;
-    var ref = FB_STORAGE.ref(yol);
-    await ref.put(blob);
-    var url = await ref.getDownloadURL();
-    return url;
-  } catch(e) {
-    console.warn('Storage upload hatası, base64 kullanılıyor:', e);
-    return base64DataUrl; // fallback: base64 sakla
-  }
-}
-
-async function uploadCokluFoto(base64Arr, klasor, prefix) {
-  if (!base64Arr || !base64Arr.length) return [];
-  var sonuclar = [];
-  for (var i = 0; i < base64Arr.length; i++) {
-    var url = await uploadFotoToStorage(base64Arr[i], klasor, prefix + '_' + i);
-    sonuclar.push(url);
-  }
-  return sonuclar;
-}
-
-async function storagedenSil(url) {
-  if (!url || url.startsWith('data:')) return; // base64 ise silme
-  try {
-    await FB_STORAGE.refFromURL(url).delete();
-  } catch(e) {}
-}
-
-
-/** Boş doküman ref — ref.id = Firestore’un ürettiği ID (henüz yazılmadı). */
-function fsNewDocRef(col) {
-  return FS.collection(col).doc();
-}
-
-// In-memory cache
-let _cache = { otel: [], hurda: [], deleted: [], depo_sira: {}, gecici: [] };
-let _fbReady = false;
-let _listeners = [];
-
-// ── FIRESTORE YARDIMCI FONKSİYONLAR ──
-// Koleksiyondan tüm dokümanları dizi olarak getirir
-async function fsGetList(col) {
-  const snap = await FS.collection(col).get();
-  return snap.docs.map(d => ({ _id: d.id, ...d.data() }));
-}
-// Tek doküman getirir (depo_sira gibi obje yapıları için)
-async function fsGetDoc(col, docId) {
-  const snap = await FS.collection(col).doc(docId).get();
-  return snap.exists ? snap.data() : {};
-}
-// Tüm listeyi tek seferde yazar (eski Realtime DB .set() gibi)
-async function fsSetList(col, arr) {
-  // Sadece değişenleri yaz — tüm koleksiyonu SİLME
-  const batch = FS.batch();
-  arr.forEach(function(item) {
-    var id = (item.id) ? String(item.id) : (item._id) ? String(item._id) : null;
-    if (!id) return;
-    var clean = Object.assign({}, item);
-    delete clean._id;
-    batch.set(FS.collection(col).doc(id), clean);
-  });
-  return batch.commit();
-}
-function _fsCleanDocData(data) {
-  const clean = Object.assign({}, data);
-  delete clean._id;
-  return clean;
-}
-/** Tüm dokümanı değiştirir; objeden çıkan alanlar Firestore'da da silinir. */
-async function fsReplaceDoc(col, id, data) {
-  return FS.collection(col).doc(String(id)).set(_fsCleanDocData(data));
-}
-/** Sadece verilen alanları yazar; diğer üst seviye alanlara dokunmaz. */
-async function fsMergeDoc(col, id, data) {
-  return FS.collection(col).doc(String(id)).set(_fsCleanDocData(data), { merge: true });
-}
-// Tek doküman — tam replace (meta vb.)
-async function fsSetDoc(col, docId, data) {
-  return fsReplaceDoc(col, docId, data);
-}
-// Tek doküman sil
-async function fsDeleteDoc(col, id) {
-  return FS.collection(col).doc(String(id)).delete();
-}
-// fsUpdateDoc alias (fsReplaceDoc ile aynı)
-function fsUpdateDoc(col, id, data) {
-  return fsReplaceDoc(col, id, data);
-}
-function _fsSetBusy(btn, busy) {
-  if (btn && btn.nodeType === 1) btn.disabled = !!busy;
-}
-
-function fbGet(path) {
-  if (path === 'depo_sira') return fsGetDoc('meta', 'depo_sira');
-  return fsGetList(path);
-}
-function fbSet(path, data) {
-  if (path === 'depo_sira') return fsSetDoc('meta', 'depo_sira', data);
-  return fsSetList(path, Array.isArray(data) ? data : Object.values(data).filter(Boolean));
-}
-function fbPatch(path, data) {
-  return fbSet(path, data);
-}
-
-// Realtime sync — sadece otel koleksiyonu loadAllFromFirebase içinde dinleniyor
-
-// İlk yükleme
-function loadAllFromFirebase() {
-  return new Promise(function(resolve) {
-    _fbReady = false;
-    setDbLoading(true, null);
-
-    // 1. localStorage'dan anında yükle (0 Firestore okuma)
-    try {
-      var lc = localStorage.getItem('lc_otel');
-      if (lc) { _cache.otel = JSON.parse(lc).map(function(k){ return Object.assign({}, k, {tip: k.tip || inferTipFromDonem(k.donem)}); }); }
-      var lh = localStorage.getItem('lc_hurda');
-      if (lh) _cache.hurda = JSON.parse(lh);
-      var ld = localStorage.getItem('lc_deleted');
-      if (ld) _cache.deleted = JSON.parse(ld);
-    } catch(e) {}
-
-    // Aktif dönem localStorage'dan
-    var savedDonem = localStorage.getItem('aktif_donem');
-    if (savedDonem) {
-      _aktifDonem = savedDonem;
-      var lbl = document.getElementById('aktifDonemLabel');
-      if (lbl) lbl.textContent = _aktifDonem;
-    }
-
-    // 2. Sadece otel koleksiyonunu realtime dinle — onSnapshot ilk tetiklenişte tüm veriyi çeker (1 okuma)
-    var unsubOtel = FS.collection('otel').onSnapshot(function(snap) {
-      _cache.otel = snap.docs.map(function(d){
-        var data = d.data();
-        return Object.assign({}, data, {tip: data.tip || inferTipFromDonem(data.donem)});
-      }).filter(Boolean);
-      try { localStorage.setItem('lc_otel', JSON.stringify(_cache.otel)); } catch(e) {}
-      if (_fbReady) { renderCards(); renderOteleAlinan(); updateTabCounts(); }
-    }, function(err) { console.warn('otel snapshot error:', err); });
-    _listeners.push(unsubOtel);
-
-    // 3. depo_sira + ayarlar — tek doküman, bir kez oku
-    fsGetDoc('meta', 'depo_sira').then(function(data) {
-      _cache.depo_sira = data || {};
-    }).catch(function(){});
-
-    fsGetDoc('meta', 'ayarlar').then(function(ayarlar) {
-      if (ayarlar && ayarlar.aktifDonem) {
-        _aktifDonem = ayarlar.aktifDonem;
-        localStorage.setItem('aktif_donem', _aktifDonem);
-        var lbl = document.getElementById('aktifDonemLabel');
-        if (lbl) lbl.textContent = _aktifDonem;
-      }
-    }).catch(function(){});
-
-    // 4. hurda, deleted — localStorage yoksa bir kez oku
-    if (!_cache.hurda || _cache.hurda.length === 0) {
-      fsGetList('hurda').then(function(list) {
-        _cache.hurda = list;
-        try { localStorage.setItem('lc_hurda', JSON.stringify(list)); } catch(e) {}
-      }).catch(function(){});
-    }
-    // deleted: her zaman Firestore'dan çek (duplikasyon olmasın)
-    fsGetList('deleted').then(function(list) {
-      // ID'ye göre deduplicate
-      var seen = {};
-      var temiz = list.filter(function(k) {
-        if (!k || !k.id || seen[k.id]) return false;
-        seen[k.id] = true;
-        return true;
-      });
-      _cache.deleted = temiz;
-      try { localStorage.setItem('lc_deleted', JSON.stringify(temiz)); } catch(e) {}
-    }).catch(function(){});
-    fsGetList('gecici').then(function(list) {
-      _cache.gecici = list;
-    }).catch(function(){});
-
-    // 5. 800ms sonra hazır say
-    setTimeout(function() {
-      _fbReady = true;
-      setDbLoading(false, null);
-      resolve();
-    }, 800);
-  });
-}
-
-var _dbOverlayDepth = 0;
-function showLoadingOverlay(show) {
-  let ov = document.getElementById('fbLoadingOverlay');
-  if (!ov) {
-    ov = document.createElement('div');
-    ov.id = 'fbLoadingOverlay';
-    ov.style.cssText = 'position:fixed;inset:0;background:rgba(255,255,255,0.92);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
-    ov.innerHTML = `<div style="font-family:Montserrat,sans-serif;font-size:22px;font-weight:900;"><span style="color:#cc0000;">LAS</span> ANKARA</div><div id="fbLoadingOverlayMsg" style="font-size:14px;color:#666;">Yükleniyor...</div><div style="width:48px;height:48px;border:4px solid #eee;border-top-color:#cc0000;border-radius:50%;animation:spin 0.8s linear infinite;"></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
-    document.body.appendChild(ov);
-  }
-  ov.style.display = show ? 'flex' : 'none';
-}
-/** Tam ekran loading (iç içe işlemlerde sayaç) + isteğe bağlı buton disabled */
-function setDbLoading(busy, btn) {
-  if (busy) {
-    _dbOverlayDepth++;
-    if (_dbOverlayDepth === 1) showLoadingOverlay(true);
-  } else {
-    _dbOverlayDepth = Math.max(0, _dbOverlayDepth - 1);
-    if (_dbOverlayDepth === 0) showLoadingOverlay(false);
-  }
-  _fsSetBusy(btn, !!busy);
-}
-
-// ── STORAGE (Firebase-backed) ──
-// Cache + localStorage yalnızca Firestore yazımı başarılı olduktan sonra güncellenir (optimistic UI yok).
-const getData = () => _cache.otel;
-const setData = async d => {
-  await fbSet('otel', d);
-  _cache.otel = d;
-  try { localStorage.setItem('lc_otel', JSON.stringify(d)); } catch(e) {}
-};
-const getHurda = () => _cache.hurda;
-const setHurda = async d => {
-  await fbSet('hurda', d);
-  _cache.hurda = d;
-  try { localStorage.setItem('lc_hurda', JSON.stringify(d)); } catch(e) {}
-};
-const getDeleted = () => _cache.deleted;
-const setDeleted = async d => {
-  await fbSet('deleted', d);
-  _cache.deleted = d;
-  try { localStorage.setItem('lc_deleted', JSON.stringify(d)); } catch(e) {}
-};
-const getGecici = () => _cache.gecici;
-const setGecici = async d => {
-  await fbSet('gecici', d);
-  _cache.gecici = d;
-};
-
-// ── LOGIN ──
-function setRole(r, el) {
-  role = r || 'admin'; pin = ''; updateDots();
-  document.getElementById('loginError').textContent = '';
-  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  const pinSection = document.getElementById('pinSection');
-  const calisanBtn = document.getElementById('calisanBtn');
-  const calisanInfo = document.getElementById('calisanInfo');
-  // Her iki rol için de PIN göster
-  pinSection.style.display = 'block';
-  if (calisanInfo) calisanInfo.style.display = 'none';
-  if (calisanBtn) calisanBtn.style.display = 'none';
-  document.getElementById('pinLabel').textContent = r === 'admin' ? 'Admin PIN Kodunu Girin' : 'Çalışan PIN Kodunu Girin';
-}
-function pinPress(n) {
-  if (!n || pin.length >= 4) return;
-  pin += n; updateDots();
-  if (pin.length === 4) setTimeout(tryLogin, 120);
-}
-function pinDel() { pin = pin.slice(0,-1); updateDots(); }
-function updateDots() {
-  for (let i = 0; i < 4; i++)
-    document.getElementById('d'+i).classList.toggle('filled', i < pin.length);
-}
-function tryLogin() {
-  const r = role || 'admin';
-  const correct = pin === PINS[r];
-  if (correct) {
-    role = r;
-    localStorage.setItem('la_role', role);
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appScreen').classList.add('active');
-    applyRole();
-    if (!_fbReady) {
-      loadAllFromFirebase().then(() => init());
-    } else {
-      init();
-    }
-  } else {
-    document.getElementById('loginError').textContent = '❌ Yanlış PIN, tekrar deneyin.';
-    pin = ''; updateDots();
-  }
-}
-function applyRole() {
-  const pill = document.getElementById('rolePill');
-  const formTab = document.getElementById('ntab-form');
-  const hurdaForm = document.getElementById('hurdaFormCard');
-  const raporBtn = document.getElementById('raporBtn');
-  if (role === 'admin') {
-    pill.textContent = '👑 Yönetici ▾'; pill.classList.add('admin');
-    var dd = document.getElementById('adminDropdown'); if(dd) dd.dataset.admin='1';
-
-    formTab.classList.remove('hidden');
-    hurdaForm.style.display = 'block';
-    var fk = document.getElementById('formKarti'); if(fk) fk.style.display='block';
-    var fps2 = document.getElementById('formPageSub'); if(fps2) fps2.style.display='block';
-  } else {
-    pill.textContent = '🔧 Çalışan'; pill.classList.remove('admin');
-    var dd2 = document.getElementById('adminDropdown'); if(dd2) dd2.dataset.admin='0';
-
-    formTab.classList.remove('hidden'); // Çalışan listeyi görebilir
-    hurdaForm.style.display = 'none';
-    var fk2 = document.getElementById('formKarti'); if(fk2) fk2.style.display='none';
-    var fps = document.getElementById('formPageSub'); if(fps) fps.style.display='none';
-  }
-  applyDepoForm();
-}
-function applyDepoForm() {
-  const ef = document.getElementById('depoEkleForm');
-  if (ef) ef.style.display = role === 'admin' ? 'block' : 'none';
-}
-function logout() {
-  pin = ''; role = 'admin';
-  localStorage.removeItem('la_role');
-  document.getElementById('appScreen').classList.remove('active');
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.querySelectorAll('.role-tab').forEach((t,i) => t.classList.toggle('active', i===0));
-  updateDots();
-}
-
-// ── PAGES ──
-function isValidTabPage(name) {
-  return !!name && !!document.getElementById('page-' + name);
-}
-function getTabFromUrl() {
-  try {
-    var t = (new URLSearchParams(window.location.search).get('tab') || '').trim().toLowerCase();
-    return isValidTabPage(t) ? t : null;
-  } catch (e) { return null; }
-}
-function syncTabToUrl(name) {
-  if (!isValidTabPage(name)) return;
-  try {
-    var u = new URL(window.location.href);
-    u.searchParams.set('tab', name);
-    history.replaceState({ tab: name }, '', u.pathname + u.search + u.hash);
-  } catch (e) {}
-}
-function showPage(name, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  if (el) el.classList.add('active');
-  if (name === 'depo') { renderDepoListesi(); applyDepoForm(); }
-  if (name === 'arsiv') renderArsiv();
-  if (name === 'gelmeyen') renderGelmeyen();
-  if (name === 'deleted') renderDeleted();
-  if (name === 'satilan') renderSatilan();
-  if (name === 'hurda') renderHurda();
-  if (name === 'montaj') renderMontajTamam();
-  if (name === 'form') renderOteleAlinan();
-  syncTabToUrl(name);
-}
-
-// ── INIT ──
-function init() {
-  populateDonem();
-  renderCards();
-  renderMontajTamam();
-  renderOteleAlinan();
-  renderHurda();
-  renderDepoListesi();
-  renderGelmeyen();
-  renderArsiv();
-  renderDeleted();
-  updateTabCounts();
-  var lbl = document.getElementById('aktifDonemLabel');
-  if (lbl) lbl.textContent = AKTIF_DONEM_GET();
-  applyDepoForm();
-  var initialTab = getTabFromUrl() || 'otel';
-  var tabBtn = document.getElementById('ntab-' + initialTab);
-  showPage(initialTab, tabBtn);
-}
-
-// ── PHOTO ──
 function handleMultiplePhotos(e) {
   var files = Array.from(e.target.files);
   if (!files.length) return;
@@ -2697,7 +2305,7 @@ async function saveKayit() {
     // Yeni fotoğraf varsa Storage'a yükle
     var editFotolar = photoB64.form ? [photoB64.form].concat(photoB64.formExtra || []) : (prev.fotolar || []);
     if (photoB64.form && photoB64.form.startsWith('data:')) {
-      try { editFotolar = await uploadCokluFoto(editFotolar, 'otel/' + prev.id, 'foto'); } catch(e) {}
+      try { editFotolar = await compressCokluFoto(editFotolar); } catch(e) {}
     }
     const updated = Object.assign({}, prev, {
       ad, soyad, isim, plaka, ebat,
@@ -2736,7 +2344,7 @@ async function saveKayit() {
   // Fotoğrafları Storage'a yükle
   var yeniFotolar = photoB64.form ? [photoB64.form].concat(photoB64.formExtra || []) : [];
   if (yeniFotolar.length > 0) {
-    try { yeniFotolar = await uploadCokluFoto(yeniFotolar, 'otel/' + oRef.id, 'foto'); } catch(e) {}
+    try { yeniFotolar = await compressCokluFoto(yeniFotolar); } catch(e) {}
   }
   const item = {
     id: oRef.id,
@@ -4160,7 +3768,7 @@ async function saveHurda() {
   // Fotoğrafları Storage'a yükle
   var kayitFotolar = [...hurdaFotolar];
   if (kayitFotolar.length > 0) {
-    try { kayitFotolar = await uploadCokluFoto(kayitFotolar, 'hurda/' + hRef.id, 'foto'); } catch(e) {}
+    try { kayitFotolar = await compressCokluFoto(kayitFotolar); } catch(e) {}
   }
   const yeniHurda = {
     id: hRef.id,
