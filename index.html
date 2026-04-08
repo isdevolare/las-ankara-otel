@@ -3173,7 +3173,9 @@ async function permanentDeleteDeleted(id) {
   if (!confirm(mesaj)) return;
   const yeni = deleted.filter(k => k.id !== id);
   try {
-    await setDeleted(yeni);
+    await fsDeleteDoc('deleted', id);
+    _cache.deleted = yeni;
+    try { localStorage.setItem('lc_deleted', JSON.stringify(yeni)); } catch(e) {}
     renderDeleted();
     updateTabCounts();
     showToast('❌ Kayıt kalıcı silindi', 'success');
