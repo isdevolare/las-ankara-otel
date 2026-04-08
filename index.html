@@ -2121,23 +2121,7 @@ async function uploadCokluFotoToStorage(fotolar, klasor) {
 }
 
 // ── STORAGE UPLOAD ──
-async function uploadFotoToStorage(dataUrl, klasor) {
-  if (!dataUrl) return "";
-  if (dataUrl.startsWith("http")) return dataUrl;
-  klasor = klasor || "otel";
-  var ext = dataUrl.startsWith("data:image/png") ? "png" : "jpg";
-  var dosyaAdi = klasor + "/" + Date.now() + "_" + Math.random().toString(36).slice(2,8) + "." + ext;
-  var ref = FB_STORAGE.ref().child(dosyaAdi);
-  var res = await fetch(dataUrl);
-  var blob = await res.blob();
-  await ref.put(blob);
-  return await ref.getDownloadURL();
-}
-async function uploadCokluFotoToStorage(fotolar, klasor) {
-  if (!fotolar || fotolar.length === 0) return [];
-  var sonuclar = await Promise.all(fotolar.map(function(f) { return uploadFotoToStorage(f, klasor); }));
-  return sonuclar.filter(Boolean);
-}const FB_STORAGE = firebase.storage();
+const FB_STORAGE = firebase.storage();
 // In-memory cache
 let _cache = { otel: [], hurda: [], deleted: [], depo_sira: {}, gecici: [] };
 let _fbReady = false;
