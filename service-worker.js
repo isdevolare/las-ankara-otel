@@ -1,4 +1,4 @@
-const CACHE_NAME = 'las-ankara-v6';
+const CACHE_NAME = 'las-ankara-v7';
 
 const STATIC_ASSETS = [
   './',
