@@ -2092,6 +2092,34 @@ if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
 const FB_AUTH = firebase.auth();
 const FS = firebase.firestore();
 
+// ── CLOUDINARY UPLOAD ──
+const CLOUDINARY_CLOUD = 'doo5cnkuo';
+const CLOUDINARY_PRESET = 'lasankarabase';
+
+async function uploadFotoToStorage(dataUrl, klasor) {
+  if (!dataUrl) return '';
+  if (dataUrl.startsWith('http')) return dataUrl;
+  var formData = new FormData();
+  formData.append('file', dataUrl);
+  formData.append('upload_preset', CLOUDINARY_PRESET);
+  formData.append('folder', 'lasankara/' + (klasor || 'otel'));
+  var res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUDINARY_CLOUD + '/image/upload', {
+    method: 'POST',
+    body: formData
+  });
+  var data = await res.json();
+  if (data.secure_url) return data.secure_url;
+  throw new Error(data.error && data.error.message || 'Upload failed');
+}
+
+async function uploadCokluFotoToStorage(fotolar, klasor) {
+  if (!fotolar || fotolar.length === 0) return [];
+  var sonuclar = await Promise.all(fotolar.map(function(f) {
+    return uploadFotoToStorage(f, klasor);
+  }));
+  return sonuclar.filter(Boolean);
+}
+
 // ── STORAGE UPLOAD ──
 async function uploadFotoToStorage(dataUrl, klasor) {
   if (!dataUrl) return "";
