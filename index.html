@@ -4662,7 +4662,7 @@ function yedekMenuAc() {
     + '<button onclick="jsonExport()" style="width:100%;padding:13px;background:#1a8a3a;color:#fff;border:none;border-radius:8px;font-family:Inter,sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;">⬇️ Yedeği İndir</button>'
     + '<button onclick="document.getElementById(' + JSON.stringify('jsonImportInput') + ').click()" style="width:100%;padding:13px;background:#3a6abf;color:#fff;border:none;border-radius:8px;font-family:Inter,sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px;">⬆️ Yedekten Geri Yükle</button>'
     + '<input type="file" id="jsonImportInput" accept=".json" style="display:none;" onchange="jsonImport(event)">'
-    + '<button onclick="document.getElementById(' + JSON.stringify('yedekModal') + ').remove()" style="width:100%;padding:11px;background:#f5f5f5;color:#555;border:1.5px solid #ddd;border-radius:8px;font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Kapat</button>'
+    + '<button onclick="var m=document.getElementById(\'yedekModal\');if(m)m.remove();" style="width:100%;padding:11px;background:#f5f5f5;color:#555;border:1.5px solid #ddd;border-radius:8px;font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Kapat</button>'
     + '</div>';
 
   overlay.addEventListener('click', function(e) { if(e.target===overlay) overlay.remove(); });
