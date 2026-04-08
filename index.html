@@ -2105,6 +2105,37 @@ if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
 const FB_AUTH = firebase.auth();
 const FS = firebase.firestore();
 const FB_STORAGE = firebase.storage();
+
+// ── FOTO COMPRESS ──
+async function compressPhoto(dataUrl, maxWidth, quality) {
+  maxWidth = maxWidth || 1200;
+  quality = quality || 0.78;
+  return new Promise(function(resolve) {
+    if (!dataUrl || !dataUrl.startsWith('data:image')) { resolve(dataUrl); return; }
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width, h = img.height;
+      if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = function() { resolve(dataUrl); };
+    img.src = dataUrl;
+  });
+}
+
+async function compressCokluFoto(arr) {
+  if (!arr || !arr.length) return [];
+  var sonuc = [];
+  for (var i = 0; i < arr.length; i++) {
+    sonuc.push(await compressPhoto(arr[i]));
+  }
+  return sonuc;
+}
+
 // ── FIREBASE STORAGE — Foto Upload ──
 var _dbOverlayDepth = 0;
 
@@ -2284,12 +2315,18 @@ function loadAllFromFirebase() {
         try { localStorage.setItem('lc_hurda', JSON.stringify(list)); } catch(e) {}
       }).catch(function(){});
     }
-    if (!_cache.deleted || _cache.deleted.length === 0) {
-      fsGetList('deleted').then(function(list) {
-        _cache.deleted = list;
-        try { localStorage.setItem('lc_deleted', JSON.stringify(list)); } catch(e) {}
-      }).catch(function(){});
-    }
+    // deleted: her zaman Firestore'dan çek (duplikasyon olmasın)
+    fsGetList('deleted').then(function(list) {
+      // ID'ye göre deduplicate
+      var seen = {};
+      var temiz = list.filter(function(k) {
+        if (!k || !k.id || seen[k.id]) return false;
+        seen[k.id] = true;
+        return true;
+      });
+      _cache.deleted = temiz;
+      try { localStorage.setItem('lc_deleted', JSON.stringify(temiz)); } catch(e) {}
+    }).catch(function(){});
     fsGetList('gecici').then(function(list) {
       _cache.gecici = list;
     }).catch(function(){});
@@ -2502,8 +2539,9 @@ function handleMultiplePhotos(e) {
     });
   });
   
-  Promise.all(promises).then(function(results) {
-    // Mevcut fotolara ekle (üstüne yazma)
+  Promise.all(promises).then(async function(results) {
+    // Compress et
+    results = await compressCokluFoto(results);
     var mevcutlar = photoB64.form ? [photoB64.form].concat(photoB64.formExtra || []) : [];
     var hepsi = mevcutlar.concat(results);
     photoB64.form = hepsi[0] || '';
@@ -2572,7 +2610,8 @@ function handleHurdaPhotos(e) {
     });
   }
 
-  Promise.all(files.map(f => readFile(f))).then(results => {
+  Promise.all(files.map(f => readFile(f))).then(async results => {
+    results = await compressCokluFoto(results);
     hurdaFotolar = results;
     results.forEach((dataUrl, i) => {
       const wrap = document.createElement('div');
