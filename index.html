@@ -2639,6 +2639,13 @@ async function saveKayit() {
   };
   addHistory(item, 'Kayıt oluşturuldu');
   if (sira) addHistory(item, `Sıra no atandı: ${sira}`);
+  // Önce fotoğrafları yükle, sonra kaydet
+  if (photoB64.form && photoB64.form.startsWith('data:')) {
+    var yeniFotolar = [photoB64.form].concat(photoB64.formExtra || []);
+    try { yeniFotolar = await uploadCokluFotoToStorage(yeniFotolar, 'otel'); } catch(e) {}
+    item.foto = yeniFotolar[0] || '';
+    item.fotolar = yeniFotolar;
+  }
   data.push(item);
   _cache.otel = data;
   try { localStorage.setItem('lc_otel', JSON.stringify(data)); } catch(e) {}
@@ -2651,14 +2658,7 @@ async function saveKayit() {
     var listEl = document.getElementById('oteleAlinanList');
     if (listEl) listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 200);
-  // Fotoğrafları Storage'a yükle
-  if (photoB64.form && photoB64.form.startsWith('data:')) {
-    var yeniFotolar = [photoB64.form].concat(photoB64.formExtra || []);
-    try { yeniFotolar = await uploadCokluFotoToStorage(yeniFotolar, 'otel'); } catch(e) {}
-    item.foto = yeniFotolar[0] || '';
-    item.fotolar = yeniFotolar;
-  }
-  // Sadece yeni kaydı Firestore'a yaz
+  // Firestore'a yaz
   fsUpdateDoc('otel', item.id, item).catch(function(){ showToast('⚠️ Kayıt sunucuya yazılamadı!', 'error'); });
 }
 function clearForm() {
