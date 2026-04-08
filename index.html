@@ -2153,11 +2153,16 @@ async function fsSetList(col, arr) {
   return batch.commit();
 }
 
-// Tek doküman güncelle
-async function fsUpdateDoc(col, id, data) {
+// Tek doküman yaz (create veya overwrite)
+async function fsReplaceDoc(col, id, data) {
   var clean = Object.assign({}, data);
   delete clean._id;
   return FS.collection(col).doc(String(id)).set(clean);
+}
+
+// Tek doküman güncelle (fsReplaceDoc ile aynı)
+async function fsUpdateDoc(col, id, data) {
+  return fsReplaceDoc(col, id, data);
 }
 
 // Tek doküman sil
