@@ -2708,8 +2708,7 @@ function editKayit(id) {
 // ── CARDS ──
 function populateDonem() {
   const all = getData();
-  const dynamicDonemler = [...new Set(all.map(d => d.donem).filter(Boolean))];
-  const donemler = [...new Set([...DONEM_OPTIONS, ...dynamicDonemler])];
+  const donemler = DONEM_OPTIONS;
 
   const sel = document.getElementById('filterDonem');
   const cur = sel.value;
