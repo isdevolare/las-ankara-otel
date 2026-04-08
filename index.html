@@ -1367,7 +1367,6 @@ select.field-input option { background: #fff; }
       maskot.addEventListener('click',function(){
         if(sapka){sapka.classList.add('kalkan');setTimeout(function(){sapka.classList.remove('kalkan');},900);}
         balonGoster('👋 Yardımcı olayım!',2200);
-        korna();
       });
 
       setTimeout(senaryo,800);
@@ -4925,9 +4924,10 @@ function buildTireFormHtml(item) {
   const telRaw = (item.tel || '').replace(/^90/, '0');
   const telGoster = telRaw ? telRaw.replace(/(\d{4})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4') : '-';
   const notText = item.not ? item.not : '—';
-  const photoBlock = item.foto ? `
-    <div style="margin-bottom:16px;">
-      <img src="${item.foto}" alt="Lastik" style="width:100%;max-height:220px;object-fit:cover;border-radius:10px;">
+  const allFotos = item.fotolar && item.fotolar.length ? item.fotolar : (item.foto ? [item.foto] : []);
+  const photoBlock = allFotos.length ? `
+    <div style="margin-bottom:16px;overflow-x:auto;display:flex;gap:8px;scroll-snap-type:x mandatory;">
+      ${allFotos.map(f => `<img src="${f}" alt="Lastik" style="width:100%;min-width:100%;max-height:220px;object-fit:cover;border-radius:10px;scroll-snap-align:start;flex-shrink:0;">`).join('')}
     </div>
   ` : '';
 
@@ -4991,10 +4991,7 @@ function buildTireFormHtml(item) {
             <div style="font-size:10px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Dönem</div>
             <div style="font-size:15px;font-weight:800;color:#111;">${item.donem || '-'}</div>
           </div>
-          <div style="background:#f8f8f8;border-radius:8px;padding:10px 12px;">
-            <div style="font-size:10px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Diş Derinliği</div>
-            <div style="font-size:15px;font-weight:800;color:#111;">${item.dis ? item.dis + ' mm' : '-'}</div>
-          </div>
+
           <div style="background:#f8f8f8;border-radius:8px;padding:10px 12px;">
             <div style="font-size:10px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">Üretim Yılı</div>
             <div style="font-size:15px;font-weight:800;color:#111;">${item.uretim || '-'}</div>
