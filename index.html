@@ -1440,7 +1440,7 @@ select.field-input option { background: #fff; }
         <div class="field">
           <div class="field-label">Dönem *</div>
           <select class="field-input" id="f_donem">
-            <option value="2026 Yaz" selected>2026 Yaz</option>
+            
             <option value="2026 Kış">2026 Kış</option>
             <option value="2027 Yaz">2027 Yaz</option>
             <option value="2027 Kış">2027 Kış</option>
@@ -1494,7 +1494,7 @@ select.field-input option { background: #fff; }
             <option value="2027 Kış">2027 Kış</option>
             <option value="2027 Yaz">2027 Yaz</option>
             <option value="2026 Kış">2026 Kış</option>
-            <option value="2026 Yaz">2026 Yaz</option>
+            
           </select>
           <input type="text" id="oteleAlinanSearch" placeholder="🔍 Plaka veya isim ara..." oninput="renderOteleAlinan()"
             style="font-family:'Inter',sans-serif;font-size:13px;border:1.5px solid #ddd;border-radius:6px;padding:7px 12px;outline:none;width:200px;">
@@ -1554,7 +1554,7 @@ select.field-input option { background: #fff; }
                    color:#111;background:#f5f5f5;border:2px solid #eee;
                    padding:11px 10px;border-radius:8px;outline:none;box-sizing:border-box;"
             onfocus="this.style.borderColor='#cc0000'" onblur="this.style.borderColor='#eee'">
-            <option value="2026 Yaz">2026 Yaz</option>
+            
             <option value="2026 Kış">2026 Kış</option>
             <option value="2027 Yaz">2027 Yaz</option>
             <option value="2027 Kış">2027 Kış</option>
@@ -1579,7 +1579,7 @@ select.field-input option { background: #fff; }
         <div style="display:flex;align-items:center;gap:8px;">
           <select id="depoDonemFilter" onchange="renderDepoListesi()" style="font-family:Inter,sans-serif;font-size:12px;border:1.5px solid #eee;border-radius:6px;padding:5px 10px;background:#f8f8f8;color:#333;outline:none;">
             <option value="">Tüm Dönemler</option>
-            <option value="2026 Yaz">2026 Yaz</option>
+            
             <option value="2026 Kış">2026 Kış</option>
             <option value="2027 Yaz">2027 Yaz</option>
             <option value="2027 Kış">2027 Kış</option>
@@ -1894,7 +1894,7 @@ let role = 'admin'; // varsayılan
 let pin = '';
 let photoB64 = { form: '' };
 let hurdaFotolar = [];
-let _aktifDonem = localStorage.getItem('aktif_donem') || '2026 Yaz';
+let _aktifDonem = localStorage.getItem('aktif_donem') || '2026 Kış';
 function AKTIF_DONEM_GET() { return _aktifDonem; }
 async function setAktifDonem(donem) {
   _aktifDonem = donem;
@@ -2683,7 +2683,7 @@ function editKayit(id) {
   
   document.getElementById('f_adet').value = item.adet || '4';
   document.getElementById('f_tip').value = item.tip || inferTipFromDonem(item.donem);
-  document.getElementById('f_donem').value = item.donem || '2026 Yaz';
+  document.getElementById('f_donem').value = item.donem || '2026 Kış';
   document.getElementById('f_tel').value = item.tel || '';
   document.getElementById('f_sira').value = item.sira || '';
   document.getElementById('f_not').value = item.not || '';
