@@ -2612,7 +2612,7 @@ async function saveKayit() {
     showToast('✅ Kayıt güncellendi!', 'success');
     showPage('otel', document.getElementById('ntab-otel'));
     // Sadece bu kaydı yaz
-    fsUpdateDoc('otel', item.id, item).catch(function(err){ 
+    fsReplaceDoc('otel', item.id, item).catch(function(err){ 
     const msg = err?.message || JSON.stringify(err) || String(err);
     showToast('⚠️ Kayıt sunucuya yazılamadı!', 'error');
     alert('⚠️ HATA:\n\n' + msg);
@@ -2663,7 +2663,7 @@ async function saveKayit() {
     if (listEl) listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 200);
   // Firestore'a yaz
-  fsUpdateDoc('otel', item.id, item).catch(function(){ showToast('⚠️ Kayıt sunucuya yazılamadı!', 'error'); });
+  fsReplaceDoc('otel', item.id, item).catch(function(){ showToast('⚠️ Kayıt sunucuya yazılamadı!', 'error'); });
 }
 function clearForm() {
   ['f_ad','f_soyad','f_plaka','f_ebat','f_marka','f_uretim','f_not','f_tel','f_sira','f_edit_id'].forEach(id => { var el = document.getElementById(id); if(el) el.value=''; });
